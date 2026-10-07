@@ -33,9 +33,9 @@
 
   /* ---------- categorías ---------- */
   const CATS = {
-    "Música": "#d5263f", "Fiesta": "#c2185b", "Baile": "#e0568f", "Cine": "#123a6b",
+    "Música": "#c8336f", "Fiesta": "#8e2a8f", "Baile": "#e0568f", "Cine": "#123a6b",
     "Arte": "#6b4fa8", "Charla": "#2f7d6d", "Taller": "#b8621b", "Gastronomía": "#a8452a",
-    "Comunidad": "#256eac", "Infancia": "#3f8f3a", "Deporte": "#0f6f8f", "Oye en vivo": "#d5263f", "Otro": "#4a5d7c"
+    "Comunidad": "#256eac", "Infancia": "#3f8f3a", "Deporte": "#0f6f8f", "Oye en vivo": "#c8336f", "Otro": "#4a5d7c"
   };
   const catColor = c => CATS[c] || CATS.Otro;
 
@@ -772,6 +772,10 @@
   window.addEventListener("popstate", route);
   $("#q").addEventListener("input", ev => { fState.q = ev.target.value; renderAgenda(); });
   $$('input[name="smode"], input[name="slang"]').forEach(r => r.addEventListener("change", renderStory));
+  $("#refreshBtn").addEventListener("click", async () => {
+    const b = $("#refreshBtn"); b.classList.add("spin");
+    await refresh(true); b.classList.remove("spin"); toast(t("updated"));
+  });
   $("#langBtn").addEventListener("click", () => {
     LANG = LANG === "es" ? "fr" : "es"; store.set("lang", LANG);
     applyI18n(); renderAll();
@@ -806,7 +810,7 @@
       if (fp && FP && fp !== FP) { location.reload(); return; }
       if (fp) FP = fp;
       if (swReg) swReg.update().catch(() => { });
-      if (force || Date.now() - lastLoad > 20e3) { nowOverride = null; await loadData(); renderAll(); }
+      if (force || Date.now() - lastLoad > 5e3) { nowOverride = null; await loadData(); renderAll(); }
     } finally { checking = false; }
   }
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
@@ -827,6 +831,6 @@
     renderAll(); route();
     fingerprint().then(fp => { FP = fp; });
     setInterval(() => { if (nowOverride) nowOverride += 6e4; renderHoy(); }, 6e4);
-    if (C.API_URL) setInterval(async () => { await loadData(); renderAll(); }, 10 * 6e4);
+    if (C.API_URL) setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 60e3);
   })();
 })();

@@ -1,7 +1,7 @@
 /* Oye Toulouse — service worker
    Siempre pide la versión más nueva a la red (sin caché del navegador).
    La caché solo se usa si no hay conexión. */
-const CACHE = "oye-v5";
+const CACHE = "oye-v6";
 const CORE = ["./", "index.html", "styles.css", "app.js", "config.js", "i18n.js", "story.js", "manifest.json",
   "img/logo.png", "img/cupula.png", "img/logo-completo.png", "img/icon-192.png", "img/icon-512.png"];
 

@@ -1,7 +1,7 @@
 /* OYE TOULOUSE — textos ES / FR */
 window.OYE_I18N = {
   es: {
-    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar", pause: "Pausa", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", sub: "Media cultural latina", demo: "Ejemplos",
+    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar", pause: "Pausa", updated: "Agenda actualizada", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", sub: "Media cultural latina", demo: "Ejemplos",
     nav_hoy: "Inicio", nav_agenda: "Agenda", nav_lugares: "Directorio",
     later: "Más tarde hoy", tomorrow: "Mañana",
     cta_big: "Agrega tu evento", cta_small: "¿Organizas algo? Mándalo y lo sumamos a la agenda.",
@@ -75,7 +75,7 @@ window.OYE_I18N = {
   },
 
   fr: {
-    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter", pause: "Pause", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", sub: "Média culturel latino", demo: "Exemples",
+    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter", pause: "Pause", updated: "Agenda à jour", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", sub: "Média culturel latino", demo: "Exemples",
     nav_hoy: "Accueil", nav_agenda: "Agenda", nav_lugares: "Annuaire",
     later: "Plus tard aujourd'hui", tomorrow: "Demain",
     cta_big: "Ajoutez votre événement", cta_small: "Vous organisez quelque chose ? Envoyez-le, on l'ajoute à l'agenda.",

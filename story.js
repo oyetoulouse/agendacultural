@@ -2,7 +2,7 @@
 (function () {
   "use strict";
   const W = 1080, H = 1920;
-  const COL = { azul: "#256eac", claro: "#7c94c0", noche: "#123a6b", amarillo: "#f8e01b", rojo: "#d5263f", rosa: "#f66ea5", menta: "#afdcd7", papel: "#f6f8fc", tinta: "#0f2747", tinta2: "#4a5d7c" };
+  const COL = { azul: "#256eac", claro: "#7c94c0", noche: "#123a6b", amarillo: "#f8e01b", rojo: "#f66ea5", rosa: "#f66ea5", menta: "#afdcd7", papel: "#f6f8fc", tinta: "#0f2747", tinta2: "#4a5d7c" };
   const DISPLAY = '"Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
   const BODY = '"Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif';
   const TOP = 230, LIST_TOP = 700, LIST_BOTTOM = 1500; // zonas seguras de Instagram
@@ -56,7 +56,7 @@
     // semitono rosa abajo
     ctx.save(); ctx.beginPath(); ctx.arc(80, H - 120, 330, 0, Math.PI * 2); ctx.clip();
     ctx.fillStyle = COL.rosa; ctx.fillRect(0, H - 460, 420, 460);
-    ctx.fillStyle = "rgba(213,38,63,.6)"; for (let y = H - 460; y < H; y += 14) for (let x = (y / 14 % 2) * 7; x < 420; x += 14) { ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 7); ctx.fill(); }
+    ctx.fillStyle = "rgba(200,51,111,.5)"; for (let y = H - 460; y < H; y += 14) for (let x = (y / 14 % 2) * 7; x < 420; x += 14) { ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 7); ctx.fill(); }
     ctx.restore();
     ctx.fillStyle = grainPattern(ctx); ctx.fillRect(0, 0, W, H);
   }
