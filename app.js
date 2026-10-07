@@ -77,13 +77,13 @@
 
   /* ---------- estado ---------- */
   let favs = new Set(store.get("favs", []));
-  let EVENTS = [], PLACES = [], SHOWS = [], VIDEOS = [], lastLoad = 0;
+  let EVENTS = [], PLACES = [], SHOWS = [], PODCAST = [], lastLoad = 0;
   let demoShift = 0, nowOverride = null, loadState = "loading";
   const now = () => nowOverride ? new Date(nowOverride) : new Date();
 
   /* ---------- datos ---------- */
   async function loadData() {
-    let raw = null, places = null, shows = null, videos = [];
+    let raw = null, places = null, shows = null, podcast = [];
     if (C.API_URL) {
       try {
         const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 15000);
@@ -93,11 +93,11 @@
         const j = await res.json();
         if (!j || !Array.isArray(j.eventos)) throw new Error("respuesta inesperada");
         loadState = "ok";
-        raw = j.eventos || []; places = j.lugares || []; shows = j.emisiones || []; videos = j.videos || [];
-        store.set("cache", { raw, places, shows, videos, at: Date.now() });
+        raw = j.eventos || []; places = j.lugares || []; shows = j.emisiones || []; podcast = j.podcast || [];
+        store.set("cache", { raw, places, shows, podcast, at: Date.now() });
       } catch (e) {
         const c = store.get("cache", null);
-        if (c) { raw = c.raw; places = c.places; shows = c.shows || []; videos = c.videos || []; toast(t("offline")); }
+        if (c) { raw = c.raw; places = c.places; shows = c.shows || []; podcast = c.podcast || []; toast(t("offline")); }
         else { raw = []; places = []; shows = []; }
         loadState = c ? "ok" : "error";
         console.warn("[Oye Toulouse] No se pudo leer el Google Sheet:", e);
@@ -113,7 +113,8 @@
       }
     }
     lastLoad = Date.now();
-    VIDEOS = (videos || []).filter(v => v && v.id);
+    PODCAST = prepPodcast(podcast || []);
+    if (!PODCAST.length) loadRssDirect();
     SHOWS = prepShows(shows || []);
     EVENTS = expand((raw || []).concat(showsAsEvents(SHOWS)));
     PLACES = (places || []).filter(p => p && p.nombre && (!p.estado || /publicad/i.test(p.estado)));
@@ -186,6 +187,7 @@
     cal: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>',
     share: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>',
     mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
   };
 
@@ -452,7 +454,25 @@
         <span class="live-meta"><span>${esc(cap(fDay(nx.start)))} ${esc(fDate(nx.start))}${nx.hasTime ? " · " + hm(nx.start) : ""}</span>${nx.lugar ? `<span>${IC.pin} ${esc(nx.lugar)}</span>` : ""}</span>
         ${nx.invitades ? `<span class="live-meta"><span>${esc(t("guests"))} ${esc(nx.invitades)}</span></span>` : ""}</a>`;
     })() : "";
-    // no tocar la lista si alguien está escuchando
+    // episodios del podcast (Vodio)
+    if (PODCAST.length) {
+      $("#showList").innerHTML = PODCAST.map((e, i) => `
+        <article class="show ${PLAYER.ep === e.audio ? "playing" : ""}">
+          <div class="show-thumb">${e.imagen ? `<img src="${esc(e.imagen)}" alt="" loading="lazy">` : `<span class="show-num">#${esc(pad(e.num || "?"))}</span>`}
+            <button class="show-play" type="button" data-ep="${i}" aria-label="${esc(t("listen_here"))}">${PLAYER.ep === e.audio && PLAYER.playing ? IC.pause : IC.play}</button></div>
+          <div class="show-body">
+            <p class="show-k">${e.num ? esc(t("episode", { n: e.num })) + " · " : ""}${e.date ? esc(fDate(e.date)) : ""}${e.dur ? " · " + esc(e.dur) : ""}</p>
+            <h3>${esc(e.title)}</h3>
+            ${e.desc ? `<p class="show-d">${esc(e.desc)}</p>` : ""}
+            <div class="show-btns">
+              <button class="listen ${PLAYER.ep === e.audio ? "on" : ""}" type="button" data-ep="${i}">${PLAYER.ep === e.audio && PLAYER.playing ? IC.pause : IC.play}<span>${esc(PLAYER.ep === e.audio && PLAYER.playing ? t("pause") : t("listen_here"))}</span></button>
+              ${e.link ? `<a href="${esc(e.link)}" target="_blank" rel="noopener">${esc(t("listen_vodio"))}</a>` : ""}
+            </div>
+          </div>
+        </article>`).join("");
+      return;
+    }
+    // sin RSS: emisiones pasadas del Sheet
     if ($("#showList .show-player:not(:empty)")) return;
     const past = SHOWS.filter(s => s !== nx && !(s.start && s.end > n));
     $("#showList").innerHTML = past.length ? past.map((s, i) => {
@@ -468,13 +488,87 @@
           <div class="show-btns">
             ${canPlay ? `<button class="listen" type="button" data-play="${i}">${IC.play}<span>${esc(t("listen_here"))}</span></button>` : ""}
             ${md ? `<a href="${esc(md.link)}" target="_blank" rel="noopener">${esc(t("listen_vodio"))}</a>` : `<span class="soon">${esc(t("soon"))}</span>`}
-            ${igLink(igHandle(s.instagram))}
           </div>
         </div>
         <div class="show-player" id="player-${i}"></div>
       </article>`;
     }).join("") : (nx ? "" : `<p class="none">${esc(t("no_shows"))}</p>`);
     PAST_SHOWS = past;
+  }
+
+  /* ---------- PODCAST: datos ---------- */
+  function prepPodcast(list) {
+    return (list || []).filter(e => e && e.audio && /^https:\/\//i.test(e.audio)).map(e => {
+      const title = String(e.titulo || "").replace(/^\s*oye\s*toulouse\s*[-–:·]\s*/i, "").trim() || e.titulo;
+      const m = String(e.titulo || "").match(/#\s*(\d+)/);
+      const d = new Date(e.fecha);
+      let dur = String(e.duracion || "").trim();
+      const dm = dur.match(/^(\d+):(\d{2}):(\d{2})$/);
+      if (dm) dur = (+dm[1] ? +dm[1] + " h " + dm[2] : +dm[2]) + " min";
+      return { title: (title.replace(/^#\s*\d+\s*/, "").replace(/\s*[-–]\s*\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}\s*$/, "").trim()) || title, num: m ? m[1] : "", date: isNaN(d) ? null : d, dur,
+        audio: e.audio, link: safeUrl(e.link), imagen: safeUrl(e.imagen), desc: String(e.descripcion || "").trim() };
+    }).sort((a, b) => (b.date || 0) - (a.date || 0));
+  }
+  // por si el script aún no trae el podcast: intentar leer el RSS directo desde el navegador
+  let rssTried = false;
+  async function loadRssDirect() {
+    if (rssTried || !C.VODIO_RSS) return; rssTried = true;
+    try {
+      const xml = new DOMParser().parseFromString(await (await fetch(C.VODIO_RSS)).text(), "text/xml");
+      const items = Array.from(xml.querySelectorAll("item")).map(i => {
+        const g = sel => { const x = i.getElementsByTagName(sel)[0]; return x ? x.textContent.trim() : ""; };
+        const enc = i.getElementsByTagName("enclosure")[0], img = i.getElementsByTagName("itunes:image")[0];
+        return { titulo: g("title"), link: g("link"), fecha: g("pubDate"), audio: enc ? enc.getAttribute("url") : "", duracion: g("itunes:duration"),
+          imagen: img ? img.getAttribute("href") : "", descripcion: g("description").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 400) };
+      });
+      const pc = prepPodcast(items);
+      if (pc.length && !PODCAST.length) { PODCAST = pc; renderShows(); }
+    } catch (e) { /* el navegador no deja leer Vodio directo: hace falta el script */ }
+  }
+
+  /* ---------- PODCAST: reproductor ---------- */
+  const PLAYER = { ep: "", playing: false, title: "", img: "" };
+  const fmtT = x => { x = Math.max(0, Math.floor(x || 0)); const h = Math.floor(x / 3600), m = Math.floor(x % 3600 / 60), s2 = x % 60; return (h ? h + ":" + pad(m) : m) + ":" + pad(s2); };
+  function audioEl() { return $("#audio"); }
+  function playEpisode(i) {
+    const e = PODCAST[i]; if (!e) return;
+    const au = audioEl();
+    if (PLAYER.ep === e.audio) { au.paused ? au.play().catch(() => { }) : au.pause(); return; }
+    PLAYER.ep = e.audio; PLAYER.title = e.title; PLAYER.img = e.imagen;
+    au.src = e.audio;
+    const saved = store.get("pos", {})[e.audio];
+    au.addEventListener("loadedmetadata", function once() { au.removeEventListener("loadedmetadata", once); if (saved && saved < au.duration - 30) au.currentTime = saved; });
+    au.play().catch(() => { });
+    $("#mpTitle").textContent = e.title;
+    $("#mini").hidden = false; document.body.classList.add("has-mini");
+    if ("mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: e.title, artist: "Oye Toulouse", album: "Oye Toulouse · podcast", artwork: e.imagen ? [{ src: e.imagen, sizes: "512x512" }] : [{ src: "img/icon-512.png", sizes: "512x512", type: "image/png" }] });
+        navigator.mediaSession.setActionHandler("seekbackward", () => { au.currentTime = Math.max(0, au.currentTime - 15); });
+        navigator.mediaSession.setActionHandler("seekforward", () => { au.currentTime = au.currentTime + 30; });
+      } catch (err) { }
+    }
+  }
+  function setupPlayer() {
+    const au = audioEl(); let lastSave = 0;
+    const sync = () => {
+      PLAYER.playing = !au.paused;
+      $("#mpToggle").innerHTML = PLAYER.playing ? IC.pause : IC.play;
+      $("#mpToggle").setAttribute("aria-label", PLAYER.playing ? t("pause") : t("listen_here"));
+      renderShows();
+    };
+    au.addEventListener("play", sync); au.addEventListener("pause", sync); au.addEventListener("ended", sync);
+    au.addEventListener("timeupdate", () => {
+      const d = au.duration || 0;
+      $("#mpCur").textContent = fmtT(au.currentTime); $("#mpDur").textContent = d ? fmtT(d) : "";
+      if (d && !$("#mpSeek").matches(":active")) $("#mpSeek").value = Math.round(au.currentTime / d * 1000);
+      if (Date.now() - lastSave > 5000 && PLAYER.ep) { const p = store.get("pos", {}); p[PLAYER.ep] = au.currentTime; store.set("pos", p); lastSave = Date.now(); }
+    });
+    $("#mpSeek").addEventListener("input", ev => { if (au.duration) au.currentTime = ev.target.value / 1000 * au.duration; });
+    $("#mpToggle").addEventListener("click", () => { au.paused ? au.play().catch(() => { }) : au.pause(); });
+    $("#mpBack").addEventListener("click", () => { au.currentTime = Math.max(0, au.currentTime - 15); });
+    $("#mpFwd").addEventListener("click", () => { au.currentTime = au.currentTime + 30; });
+    $("#mpClose").addEventListener("click", () => { au.pause(); PLAYER.ep = ""; $("#mini").hidden = true; document.body.classList.remove("has-mini"); renderShows(); });
   }
   let PAST_SHOWS = [];
   function togglePlayer(i, btn) {
@@ -492,6 +586,7 @@
     if (ig) { $("#igLink").href = "https://instagram.com/" + ig; $("#igLink span").textContent = "@" + ig; }
     if (safeUrl(C.YOUTUBE)) { $("#ytLink").href = C.YOUTUBE; $("#ytLink").hidden = false; }
     if (safeUrl(C.VODIO)) { $("#vodioLink").href = C.VODIO; $("#vodioLink").hidden = false; }
+    if (!safeUrl(C.YOUTUBE)) $("#ytLink").hidden = true;
     if (C.EMAIL) { $("#mailTxt").textContent = C.EMAIL; $("#mailCard").hidden = false; }
   }
 
@@ -587,7 +682,7 @@
     ev.preventDefault();
     const err = $("#formErr"); err.hidden = true;
     $$(".f.invalid").forEach(x => x.classList.remove("invalid"));
-    const bad = ["f_titulo", "f_categoria", "f_fecha", "f_inicio", "f_desc", "f_lugar", "f_dir", "f_org", "f_contacto"].filter(id => !$("#" + id).value.trim());
+    const bad = ["f_titulo", "f_categoria", "f_fecha", "f_inicio", "f_desc", "f_lugar", "f_org", "f_contacto"].filter(id => !$("#" + id).value.trim());
     const tp = $('input[name="tipo_precio"]:checked').value;
     if (tp === "pago" && !$("#f_monto").value.trim()) bad.push("f_monto");
     if ($("#f_link").value.trim() && !safeUrl($("#f_link").value)) bad.push("f_link");
@@ -664,6 +759,7 @@
     const pt = x.closest("[data-ptype]"); if (pt) { placeType = pt.dataset.ptype; renderLugares(); return; }
     const jp = x.closest("[data-jump]"); if (jp) { ev.preventDefault(); const el = document.getElementById("d-" + jp.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     const pl = x.closest("[data-play]"); if (pl) { togglePlayer(+pl.dataset.play, pl); return; }
+    const ep = x.closest("[data-ep]"); if (ep) { playEpisode(+ep.dataset.ep); return; }
     const a = x.closest('a[href^="#"]');
     if (a) {
       const h = a.getAttribute("href").slice(1);
@@ -719,10 +815,10 @@
 
   /* ---------- arranque ---------- */
   (async function init() {
-    applyI18n(); renderOye(); setupForm();
+    applyI18n(); renderOye(); setupForm(); setupPlayer();
     const cached = C.API_URL && store.get("cache", null);
     if (cached) {
-      VIDEOS = cached.videos || []; SHOWS = prepShows(cached.shows || []);
+      PODCAST = prepPodcast(cached.podcast || []); SHOWS = prepShows(cached.shows || []);
       EVENTS = expand((cached.raw || []).concat(showsAsEvents(SHOWS)));
       PLACES = (cached.places || []).filter(p => p && p.nombre);
       loadState = "ok"; renderAll(); route();

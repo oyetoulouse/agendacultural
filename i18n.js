@@ -1,7 +1,7 @@
 /* OYE TOULOUSE — textos ES / FR */
 window.OYE_I18N = {
   es: {
-    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar aquí", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", sub: "Agenda cultural latina", demo: "Ejemplos",
+    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar", pause: "Pausa", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", sub: "Media cultural latina", demo: "Ejemplos",
     nav_hoy: "Inicio", nav_agenda: "Agenda", nav_lugares: "Directorio",
     later: "Más tarde hoy", tomorrow: "Mañana",
     cta_big: "Agrega tu evento", cta_small: "¿Organizas algo? Mándalo y lo sumamos a la agenda.",
@@ -29,7 +29,7 @@ window.OYE_I18N = {
     l_fecha: "Fecha *", l_inicio: "Inicio *", l_fin: "Fin", l_varios: "Dura varios días (expo, feria…)", l_ultimo: "Último día",
     l_desc: "Descripción *", ph_desc: "Qué va a pasar, para quién, en qué idioma…",
     l_desc2: "Descripción en francés (opcional)", ph_desc2: "Si la tienes, la mostramos a quien usa la app en francés.",
-    fs_where: "Dónde", l_lugar: "Lugar *", ph_lugar: "Ej. Bar La Candela", l_dir: "Dirección *", ph_dir: "Calle y número",
+    fs_where: "Dónde", l_lugar: "Lugar *", ph_lugar: "Ej. Bar La Candela", l_dir: "Dirección (opcional)", ph_dir: "Si no la sabes, la buscamos con el nombre del lugar",
     l_ciudad: "Ciudad", l_ig_lugar: "Instagram del lugar",
     fs_who: "Quién organiza", l_org: "Organizador/a o colectivo *", l_ig_org: "Instagram de quien organiza",
     l_tags: "Otras cuentas a etiquetar", h_tags: "Artistas, DJs, colectivos aliados… separadas por espacio.",
@@ -47,7 +47,7 @@ window.OYE_I18N = {
     places: "Directorio", places_lede: "Los partenaires de la comunidad: bares, tiendas, cafés, asociaciones y proyectos latinos en Toulouse.",
     all: "Todos", map: "Ver en el mapa", no_places: "Todavía no hay lugares en el directorio.",
     /* emisiones */
-    shows: "Emisiones", shows_lede: "Una emisión al mes, en vivo desde los lugares de la comunidad. Escúchalas aquí.",
+    shows: "Emisiones", shows_lede: "Una emisión al mes, itinerante, desde los lugares de la comunidad. Escúchalas aquí mismo.",
     next_show: "Próxima emisión", live_show: "Al aire ahora", episode: "Emisión {n}", guests: "Con",
     yt: "YouTube", listen: "Escuchar", soon: "Pronto en YouTube", no_shows: "La primera emisión llega pronto.", videos: "Últimos videos", loading: "Cargando", loading_txt: "Trayendo la agenda…", conn_err: "Sin conexión", conn_err_txt: "No pudimos cargar la agenda. Revisa tu internet e inténtalo de nuevo.", retry: "Reintentar", yt_channel: "Ver el canal en YouTube",
     about: "Quiénes somos",
@@ -75,7 +75,7 @@ window.OYE_I18N = {
   },
 
   fr: {
-    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter ici", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", sub: "Agenda culturel latino", demo: "Exemples",
+    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter", pause: "Pause", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", sub: "Média culturel latino", demo: "Exemples",
     nav_hoy: "Accueil", nav_agenda: "Agenda", nav_lugares: "Annuaire",
     later: "Plus tard aujourd'hui", tomorrow: "Demain",
     cta_big: "Ajoutez votre événement", cta_small: "Vous organisez quelque chose ? Envoyez-le, on l'ajoute à l'agenda.",
@@ -102,7 +102,7 @@ window.OYE_I18N = {
     l_fecha: "Date *", l_inicio: "Début *", l_fin: "Fin", l_varios: "Sur plusieurs jours (expo, salon…)", l_ultimo: "Dernier jour",
     l_desc: "Description *", ph_desc: "Ce qui va se passer, pour qui, dans quelle langue…",
     l_desc2: "Description en espagnol (facultatif)", ph_desc2: "Si vous l'avez, on l'affiche aux personnes qui utilisent l'appli en espagnol.",
-    fs_where: "Où", l_lugar: "Lieu *", ph_lugar: "Ex. Bar La Candela", l_dir: "Adresse *", ph_dir: "Rue et numéro",
+    fs_where: "Où", l_lugar: "Lieu *", ph_lugar: "Ex. Bar La Candela", l_dir: "Adresse (facultatif)", ph_dir: "Sinon, on la cherche avec le nom du lieu",
     l_ciudad: "Ville", l_ig_lugar: "Instagram du lieu",
     fs_who: "Qui organise", l_org: "Organisateur·rice ou collectif *", l_ig_org: "Instagram de l'organisation",
     l_tags: "Autres comptes à identifier", h_tags: "Artistes, DJ, collectifs partenaires… séparés par un espace.",
@@ -118,7 +118,7 @@ window.OYE_I18N = {
     bad_img: "Impossible de lire cette image",
     places: "Annuaire", places_lede: "Les partenaires de la communauté : bars, épiceries, cafés, associations et projets latinos à Toulouse.",
     all: "Tous", map: "Voir sur la carte", no_places: "Pas encore de lieux dans l'annuaire.",
-    shows: "Émissions", shows_lede: "Une émission par mois, en direct depuis les lieux de la communauté. À écouter ici.",
+    shows: "Émissions", shows_lede: "Une émission par mois, itinérante, depuis les lieux de la communauté. À écouter ici.",
     next_show: "Prochaine émission", live_show: "En direct", episode: "Émission {n}", guests: "Avec",
     yt: "YouTube", listen: "Écouter", soon: "Bientôt sur YouTube", no_shows: "La première émission arrive bientôt.", videos: "Dernières vidéos", loading: "Chargement", loading_txt: "On récupère l'agenda…", conn_err: "Hors connexion", conn_err_txt: "Impossible de charger l'agenda. Vérifiez votre connexion et réessayez.", retry: "Réessayer", yt_channel: "Voir la chaîne YouTube",
     about: "Qui sommes-nous",

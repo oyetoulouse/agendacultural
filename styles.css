@@ -21,7 +21,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;overscroll-behavior:none}
-html{background:var(--azul);-webkit-text-size-adjust:100%}
+html{background:var(--noche);-webkit-text-size-adjust:100%}
 a,button,label,input,select,textarea{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 body{
   background:var(--azul);
@@ -131,8 +131,8 @@ button,input,select,textarea{font:inherit}
 .dchip.today{border-color:var(--amarillo)}
 .dchip.empty{opacity:.45}
 .day{scroll-margin-top:12px}
-.day-h{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;margin:20px -16px 10px;padding:8px 16px;background:var(--azul);display:flex;align-items:baseline;gap:10px;border-bottom:2px solid rgba(255,255,255,.18)}
-.day-h b{font-family:var(--display);font-weight:400;font-size:1.35rem;color:var(--amarillo);text-shadow:2px 2px 0 var(--noche)}
+.day-h{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:2;margin:18px 0 10px;padding:6px 14px;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;max-width:100%;background:var(--noche);border-radius:99px;box-shadow:0 3px 10px rgba(10,25,50,.25)}
+.day-h b{font-family:var(--display);font-weight:400;font-size:1.2rem;color:var(--amarillo)}
 .day-h span{font-size:.85rem;opacity:.85}
 
 /* ---------- hoja de detalle ---------- */
@@ -298,3 +298,27 @@ button.show-play{border:0;cursor:pointer}
 .show-player audio{display:block;width:100%}
 .player-close{margin-top:8px;border:0;background:transparent;color:var(--tinta-2);font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
 .about{margin-top:20px;opacity:.95}
+
+/* ---------- v5: tarjeta "Agrega tu evento", reproductor ---------- */
+.cta-card{overflow-wrap:anywhere}
+.cta-big{display:flex;align-items:center;gap:10px;font-size:clamp(1.2rem,5.6vw,1.55rem);line-height:1.05;min-width:0}
+.cta-big > span:last-child{min-width:0;flex:1}
+.cta-small{font-size:.95rem;line-height:1.35}
+.show.playing{box-shadow:inset 0 0 0 3px var(--rosa)}
+.show-thumb{background-color:var(--papel-2)}
+.listen svg{width:14px;height:14px;fill:currentColor}
+
+.mini{position:fixed;left:0;right:0;z-index:29;max-width:620px;margin:0 auto;bottom:calc(var(--nav-h) + max(6px, calc(env(safe-area-inset-bottom,0px) - 14px)) + 18px);
+  display:grid;grid-template-columns:44px minmax(0,1fr) auto auto auto;align-items:center;gap:6px;
+  background:var(--amarillo);color:var(--tinta);border:3px solid var(--noche);border-radius:18px;padding:8px 8px 8px 8px;box-shadow:0 6px 18px rgba(10,25,50,.3);width:calc(100% - 20px)}
+.mp-btn{border:0;background:transparent;color:var(--tinta);cursor:pointer;font-weight:800;font-size:.8rem;padding:6px 4px;border-radius:10px}
+.mp-main{width:44px;height:44px;border-radius:50%;background:var(--rojo);color:#fff;display:grid;place-items:center;padding:0}
+.mp-main svg{width:20px;height:20px;fill:currentColor}
+.mp-info{min-width:0;display:grid;gap:2px}
+.mp-info b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;font-size:.72rem;font-variant-numeric:tabular-nums}
+.mp-row input{width:100%;min-width:0;accent-color:var(--rojo);height:18px;margin:0}
+.mp-x{font-size:1rem;color:var(--tinta-2)}
+body.has-mini .app{padding-bottom:calc(var(--nav-h) + 120px + env(safe-area-inset-bottom,0px))}
+body.has-mini .toast{bottom:calc(var(--nav-h) + 110px + env(safe-area-inset-bottom,0px))}
+@media (max-width:360px){.mp-skip{display:none}.mini{grid-template-columns:44px minmax(0,1fr) auto}}

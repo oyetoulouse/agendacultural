@@ -18,8 +18,9 @@ window.OYE_CONFIG = {
   // Redes y contacto del medio
   INSTAGRAM: "oyetoulouse",
   EMAIL: "",          // ej. "hola@oyetoulouse.fr"
-  YOUTUBE: "https://www.youtube.com/@OyeToulouse",
-  VODIO: "",          // página del podcast en Vodio (ej. "https://www.vodio.fr/…"): sale en «Síguenos»
+  YOUTUBE: "",        // vacío = no sale en «Síguenos»
+  VODIO: "https://www.vodio.fr/vodiotheque/c/2811/oye-toulouse/",  // sale en «Síguenos»
+  VODIO_RSS: "https://www.vodio.fr/rssmedias-2811.xml",          // de aquí salen los episodios
 
   // Dirección pública de la app: sale al pie de las stories (ej. "https://oyetoulouse.vercel.app")
   APP_URL: "https://agendacultural-three.vercel.app"
