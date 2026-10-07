@@ -1,0 +1,8 @@
+[
+  {"nombre":"Bar La Candela","tipo":"Bar","barrio":"Arnaud-Bernard","direccion":"Rue Gramat, Toulouse","descripcion":"Peñas, cumbia y jam los fines de semana.","instagram":"lacandela.bar","link":""},
+  {"nombre":"Café Puente","tipo":"Café","barrio":"Saint-Pierre","direccion":"Place Saint-Pierre, Toulouse","descripcion":"Café de especialidad colombiano y charlas comunitarias.","instagram":"cafepuente.tls","link":""},
+  {"nombre":"Épicerie Tierra","tipo":"Tienda","barrio":"Saint-Cyprien","direccion":"Saint-Cyprien, Toulouse","descripcion":"Harina P.A.N., yerba, ají amarillo, masa para tamales.","instagram":"","link":""},
+  {"nombre":"Studio Ritmo Sur","tipo":"Baile","barrio":"Avenue de Muret","direccion":"Avenue de Muret, Toulouse","descripcion":"Salsa, bachata y cumbia. Clases abiertas los miércoles.","instagram":"","link":""},
+  {"nombre":"Asociación Inti","tipo":"Asociación","barrio":"Empalot","direccion":"Empalot, Toulouse","descripcion":"Cultura andina, escuela de verano y acompañamiento a familias.","instagram":"asoc.inti","link":""},
+  {"nombre":"La Arepera del Canal","tipo":"Restaurante","barrio":"Minimes","direccion":"Minimes, Toulouse","descripcion":"Arepas, cachapas y tequeños. Para llevar o en terraza.","instagram":"","link":""}
+]
