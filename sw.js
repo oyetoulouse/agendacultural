@@ -1,9 +1,9 @@
 /* Oye Toulouse — service worker
    Siempre pide la versión más nueva a la red (sin caché del navegador).
    La caché solo se usa si no hay conexión. */
-const CACHE = "oye-v3";
+const CACHE = "oye-v4";
 const CORE = ["./", "index.html", "styles.css", "app.js", "config.js", "i18n.js", "story.js", "manifest.json",
-  "img/logo.png", "img/logo-completo.png", "img/icon-192.png", "img/icon-512.png"];
+  "img/logo.png", "img/cupula.png", "img/logo-completo.png", "img/icon-192.png", "img/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));

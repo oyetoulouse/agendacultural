@@ -78,7 +78,7 @@
   /* ---------- estado ---------- */
   let favs = new Set(store.get("favs", []));
   let EVENTS = [], PLACES = [], SHOWS = [], VIDEOS = [], lastLoad = 0;
-  let demoShift = 0, nowOverride = null;
+  let demoShift = 0, nowOverride = null, loadState = "loading";
   const now = () => nowOverride ? new Date(nowOverride) : new Date();
 
   /* ---------- datos ---------- */
@@ -86,13 +86,21 @@
     let raw = null, places = null, shows = null, videos = [];
     if (C.API_URL) {
       try {
-        const j = await (await fetch(C.API_URL + (C.API_URL.includes("?") ? "&" : "?") + "t=" + Date.now())).json();
+        const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 15000);
+        const res = await fetch(C.API_URL + (C.API_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { signal: ctl.signal });
+        clearTimeout(to);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const j = await res.json();
+        if (!j || !Array.isArray(j.eventos)) throw new Error("respuesta inesperada");
+        loadState = "ok";
         raw = j.eventos || []; places = j.lugares || []; shows = j.emisiones || []; videos = j.videos || [];
         store.set("cache", { raw, places, shows, videos, at: Date.now() });
       } catch (e) {
         const c = store.get("cache", null);
         if (c) { raw = c.raw; places = c.places; shows = c.shows || []; videos = c.videos || []; toast(t("offline")); }
         else { raw = []; places = []; shows = []; }
+        loadState = c ? "ok" : "error";
+        console.warn("[Oye Toulouse] No se pudo leer el Google Sheet:", e);
       }
     }
     if (!raw && !C.API_URL) {
@@ -118,7 +126,7 @@
       const start = d ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), t0 ? t0[0] : 0, t0 ? t0[1] : 0) : null;
       let end = start && t1 ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), t1[0], t1[1]) : (start ? new Date(start.getTime() + 90 * 6e4) : null);
       if (start && end <= start) end = addDays(end, 1);
-      return Object.assign({}, r, { start, end, hasTime: !!t0, yt: safeUrl(r.youtube), ytid: ytId(r.youtube), spotify: safeUrl(r.spotify), imagen: safeUrl(r.imagen) });
+      return Object.assign({}, r, { start, end, hasTime: !!t0, yt: safeUrl(r.youtube), ytid: ytId(r.youtube), imagen: safeUrl(r.imagen), media: vodioMedia(r.vodio || r.audio || r.spotify) });
     }).sort((a, b) => (b.start || 0) - (a.start || 0));
   }
   // cada emisión con fecha y hora entra también a la agenda, así aparece en "En vivo"
@@ -129,7 +137,7 @@
       lugar: s.lugar || "", direccion: s.direccion || "", organizador: "Oye Toulouse", ig_organizador: C.INSTAGRAM,
       ig_etiquetas: s.instagram || "", precio: "Gratis", descripcion: [s.invitades ? "Con " + s.invitades + "." : "", s.descripcion].filter(Boolean).join(" "),
       descripcion_fr: [s.invitades ? "Avec " + s.invitades + "." : "", s.descripcion_fr].filter(Boolean).join(" "),
-      link: s.yt, imagen: s.imagen
+      link: (s.media && s.media.link) || s.yt, imagen: s.imagen
     }));
   }
 
@@ -214,6 +222,13 @@
       if (nx) { nowOverride = nx.start.getTime() + 25 * 6e4; return renderHoy(); }
     }
     const box = $("#liveBox");
+    if (!EVENTS.length && loadState !== "ok") {
+      box.innerHTML = `<div class="live empty"><span class="live-badge"><i></i>${esc(loadState === "loading" ? t("loading") : t("conn_err"))}</span>
+        <p class="live-item">${esc(loadState === "loading" ? t("loading_txt") : t("conn_err_txt"))}</p>
+        ${loadState === "error" ? `<button class="btn retry" type="button" data-retry>${esc(t("retry"))}</button>` : ""}</div>`;
+      $("#laterList").innerHTML = ""; $("#tomorrowList").innerHTML = "";
+      return;
+    }
     if (live.length) {
       box.innerHTML = `<div class="live"><span class="live-badge"><i></i>${esc(t("live"))}</span>` +
         live.map(e => {
@@ -249,7 +264,7 @@
     return [new Date(fri.getTime() + 17 * 36e5), addDays(fri, 3)];
   }
   function renderFilters() {
-    const F = [["todo", "f_todo"], ["finde", "f_finde"], ["gratis", "f_gratis"], ["fav", "f_fav"]];
+    const F = [["todo", "f_todo"], ["finde", "f_finde"], ["gratis", "f_gratis"]];
     const cats = Array.from(new Set(EVENTS.map(e => e.categoria)));
     $("#filters").innerHTML = F.map(([id, k]) => `<button class="chip" type="button" data-f="${id}" aria-pressed="${fState.f === id}">${esc(t(k))}</button>`).join("") +
       cats.map(c => `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${fState.cat === c}">${esc(catName(c))}</button>`).join("");
@@ -335,7 +350,26 @@
     const on = favs.has(base);
     if (btn) { btn.setAttribute("aria-pressed", on); btn.querySelector("span").textContent = on ? t("fav_on") : t("fav"); }
     toast(on ? t("toast_fav_on") : t("toast_fav_off"));
-    renderHoy(); renderAgenda();
+    renderHoy(); renderAgenda(); renderFavs();
+  }
+
+  /* ---------- FAVORITOS ---------- */
+  function dayGroups(list) {
+    const byDay = new Map();
+    list.forEach(e => { const k = ymd(e.start); if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(e); });
+    return Array.from(byDay.entries()).map(([k, evs]) => {
+      const d = parseDate(k), r = relDay(d);
+      const first = r || cap(fDay(d)) + " " + d.getDate();
+      const rest = r ? `${fDay(d)} ${fDate(d)}` : L().months[d.getMonth()];
+      return `<div class="day"><div class="day-h"><b>${esc(first)}</b><span>${esc(rest)} · ${evs.length} ${esc(evs.length === 1 ? t("ev1") : t("evn"))}</span></div>
+        <ol class="timeline">${evs.map(e => tlItem(e, { until: true })).join("")}</ol></div>`;
+    }).join("");
+  }
+  function renderFavs() {
+    const n = now();
+    const list = EVENTS.filter(e => favs.has(e.base) && e.end > n);
+    $("#favList").innerHTML = list.length ? dayGroups(list)
+      : `<div class="none fav-empty"><p>${esc(t("favs_empty"))}</p><a class="btn" href="#agenda">${esc(t("favs_go"))}</a></div>`;
   }
 
   function saveBlob(blob, name) {
@@ -382,10 +416,26 @@
     }).join("") : `<p class="none">${esc(t("no_places"))}</p>`;
   }
 
-  /* ---------- EMISIONES ---------- */
+  /* ---------- EMISIONES (podcast en Vodio) ---------- */
+  // En la columna "vodio" del Sheet se puede pegar: el link del episodio, el código de inserción (<iframe…>) o un link .mp3
+  const PODCAST_HOSTS = /(^|\.)(vodio\.fr|ausha\.co|spotify\.com|soundcloud\.com|podcasts\.apple\.com|acast\.com|podbean\.com|buzzsprout\.com)$/i;
+  function vodioMedia(v) {
+    v = String(v || "").trim(); if (!v) return null;
+    const m = v.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
+    const src = (m ? m[1] : v).replace(/&amp;/g, "&");
+    if (!/^https:\/\//i.test(src)) return null;
+    let host = ""; try { host = new URL(src).hostname; } catch (e) { return null; }
+    if (/\.(mp3|m4a|aac|ogg|wav)(\?|$)/i.test(src)) return { type: "audio", src, link: src };
+    const hm2 = v.match(/height=["']?(\d+)/i);
+    if (PODCAST_HOSTS.test(host) && (m || /(embed|player|widget|iframe)/i.test(src))) return { type: "iframe", src, link: src, h: Math.min(520, Math.max(120, hm2 ? +hm2[1] : 200)) };
+    return { type: "link", src, link: src };
+  }
   function showThumb(s) {
-    const img = s.imagen || (s.ytid ? `https://img.youtube.com/vi/${s.ytid}/hqdefault.jpg` : "");
-    return img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="show-num">#${esc(pad(s.numero || "?"))}</span>`;
+    return s.imagen ? `<img src="${esc(s.imagen)}" alt="" loading="lazy">` : `<span class="show-num">#${esc(pad(s.numero || "?"))}</span>`;
+  }
+  function playerHtml(md) {
+    if (md.type === "audio") return `<audio controls autoplay preload="none" src="${esc(md.src)}"></audio>`;
+    return `<iframe src="${esc(md.src)}" height="${md.h}" loading="lazy" allow="autoplay; encrypted-media" title="Podcast"></iframe>`;
   }
   function renderShows() {
     const n = now();
@@ -402,35 +452,46 @@
         <span class="live-meta"><span>${esc(cap(fDay(nx.start)))} ${esc(fDate(nx.start))}${nx.hasTime ? " · " + hm(nx.start) : ""}</span>${nx.lugar ? `<span>${IC.pin} ${esc(nx.lugar)}</span>` : ""}</span>
         ${nx.invitades ? `<span class="live-meta"><span>${esc(t("guests"))} ${esc(nx.invitades)}</span></span>` : ""}</a>`;
     })() : "";
+    // no tocar la lista si alguien está escuchando
+    if ($("#showList .show-player:not(:empty)")) return;
     const past = SHOWS.filter(s => s !== nx && !(s.start && s.end > n));
-    $("#showList").innerHTML = past.length ? past.map(s => `
-      <article class="show">
-        <div class="show-thumb">${showThumb(s)}${s.yt ? `<a class="show-play" href="${esc(s.yt)}" target="_blank" rel="noopener" aria-label="${esc(t("yt"))}">${IC.play}</a>` : ""}</div>
+    $("#showList").innerHTML = past.length ? past.map((s, i) => {
+      const md = s.media;
+      const canPlay = md && md.type !== "link";
+      return `<article class="show">
+        <div class="show-thumb">${showThumb(s)}${canPlay ? `<button class="show-play" type="button" data-play="${i}" aria-label="${esc(t("listen_here"))}">${IC.play}</button>` : ""}</div>
         <div class="show-body">
           <p class="show-k">${esc(t("episode", { n: s.numero || "" }))}${s.start ? " · " + esc(fDate(s.start)) : ""}</p>
           <h3>${esc(sTitle(s))}</h3>
           ${s.invitades ? `<p class="show-g">${esc(t("guests"))} ${esc(s.invitades)}${s.lugar ? " · " + esc(s.lugar) : ""}</p>` : ""}
           ${sDesc(s) ? `<p class="show-d">${esc(sDesc(s))}</p>` : ""}
-          <div class="place-links">${s.yt ? `<a href="${esc(s.yt)}" target="_blank" rel="noopener">${esc(t("yt"))}</a>` : `<span class="soon">${esc(t("soon"))}</span>`}${s.spotify ? `<a href="${esc(s.spotify)}" target="_blank" rel="noopener">${esc(t("listen"))}</a>` : ""}${igLink(igHandle(s.instagram))}</div>
+          <div class="show-btns">
+            ${canPlay ? `<button class="listen" type="button" data-play="${i}">${IC.play}<span>${esc(t("listen_here"))}</span></button>` : ""}
+            ${md ? `<a href="${esc(md.link)}" target="_blank" rel="noopener">${esc(t("listen_vodio"))}</a>` : `<span class="soon">${esc(t("soon"))}</span>`}
+            ${igLink(igHandle(s.instagram))}
+          </div>
         </div>
-      </article>`).join("") : (nx ? "" : `<p class="none">${esc(t("no_shows"))}</p>`);
-
-    const used = new Set(SHOWS.map(s => s.ytid).filter(Boolean));
-    const vids = VIDEOS.filter(v => !used.has(v.id)).slice(0, 8);
-    const yt = safeUrl(C.YOUTUBE);
-    $("#videoBox").innerHTML = (vids.length ? `<h2 class="sec-title">${esc(t("videos"))}</h2><div class="videos">` + vids.map(v => {
-      const d = new Date(v.fecha);
-      return `<a class="video" href="https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}" target="_blank" rel="noopener">
-        <span class="video-thumb"><img src="https://img.youtube.com/vi/${encodeURIComponent(v.id)}/mqdefault.jpg" alt="" loading="lazy"><span class="show-play">${IC.play}</span></span>
-        <span class="video-t">${esc(v.titulo)}</span>${isNaN(d) ? "" : `<span class="video-d">${esc(fDate(d))}</span>`}</a>`;
-    }).join("") + `</div>` : "") +
-      (yt ? `<a class="yt-btn" href="${esc(yt)}" target="_blank" rel="noopener">${IC.play}<span>${esc(t("yt_channel"))}</span></a>` : "");
+        <div class="show-player" id="player-${i}"></div>
+      </article>`;
+    }).join("") : (nx ? "" : `<p class="none">${esc(t("no_shows"))}</p>`);
+    PAST_SHOWS = past;
+  }
+  let PAST_SHOWS = [];
+  function togglePlayer(i, btn) {
+    const box = document.getElementById("player-" + i), s = PAST_SHOWS[i];
+    if (!box || !s || !s.media) return;
+    if (box.innerHTML) { box.innerHTML = ""; $$(`[data-play="${i}"]`).forEach(b => b.classList.remove("on")); return; }
+    $$("#showList .show-player").forEach(p => { p.innerHTML = ""; });
+    $$("#showList [data-play]").forEach(b => b.classList.remove("on"));
+    box.innerHTML = playerHtml(s.media) + `<button class="player-close" type="button" data-play="${i}">${esc(t("hide_player"))}</button>`;
+    $$(`[data-play="${i}"]`).forEach(b => b.classList.add("on"));
   }
 
   function renderOye() {
     const ig = igHandle(C.INSTAGRAM);
     if (ig) { $("#igLink").href = "https://instagram.com/" + ig; $("#igLink span").textContent = "@" + ig; }
     if (safeUrl(C.YOUTUBE)) { $("#ytLink").href = C.YOUTUBE; $("#ytLink").hidden = false; }
+    if (safeUrl(C.VODIO)) { $("#vodioLink").href = C.VODIO; $("#vodioLink").hidden = false; }
     if (C.EMAIL) { $("#mailTxt").textContent = C.EMAIL; $("#mailCard").hidden = false; }
   }
 
@@ -567,7 +628,7 @@
   function toast(msg) { const x = $("#toast"); x.textContent = msg; x.hidden = false; clearTimeout(tt); tt = setTimeout(() => { x.hidden = true; }, 2800); }
 
   /* ---------- navegación ---------- */
-  const VIEWS = ["hoy", "agenda", "enviar", "lugares", "oye", "story"];
+  const VIEWS = ["hoy", "favoritos", "agenda", "enviar", "lugares", "oye", "story"];
   let current = "hoy";
   function route() {
     const h = (location.hash || "#hoy").slice(1);
@@ -578,17 +639,23 @@
   function showView(v, keep) {
     const changed = v !== current; current = v;
     $$(".view").forEach(s => { s.hidden = s.dataset.view !== v; });
-    const tab = v === "story" ? "agenda" : v;
+    const tab = v === "story" ? "agenda" : v === "enviar" ? "hoy" : v;
     $$(".tabbar a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (v === "story") renderStory();
     if (changed && !keep) window.scrollTo(0, 0);
   }
 
-  function renderAll() { renderHoy(); renderAgenda(); renderLugares(); renderShows(); if (current === "story") renderStory(); }
+  function renderAll() { renderHoy(); renderAgenda(); renderFavs(); renderLugares(); renderShows(); if (current === "story") renderStory(); }
+  function go(v) {
+    closeSheet();
+    if (v !== current || location.hash !== "#" + v) history.pushState(null, "", "#" + v);
+    showView(v);
+  }
 
   document.addEventListener("click", ev => {
     const x = ev.target;
     if (x.closest("[data-close]") || x.id === "sheetBack") { ev.preventDefault(); closeSheet(); history.replaceState(null, "", "#" + current); return; }
+    if (x.closest("[data-retry]")) { loadState = "loading"; renderHoy(); refresh(true); return; }
     const fv = x.closest("[data-fav]"); if (fv) return toggleFav(fv.dataset.fav, fv);
     const ic = x.closest("[data-ics]"); if (ic) return downloadIcs(ic.dataset.ics);
     const sh = x.closest("[data-share]"); if (sh) return shareEvent(sh.dataset.share);
@@ -596,12 +663,17 @@
     const cc = x.closest("[data-cat]"); if (cc) { fState.cat = fState.cat === cc.dataset.cat ? "" : cc.dataset.cat; renderAgenda(); return; }
     const pt = x.closest("[data-ptype]"); if (pt) { placeType = pt.dataset.ptype; renderLugares(); return; }
     const jp = x.closest("[data-jump]"); if (jp) { ev.preventDefault(); const el = document.getElementById("d-" + jp.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-    const a = x.closest('a[href^="#e"]');
-    if (a) { ev.preventDefault(); const id = a.getAttribute("href").slice(1); if (openSheet(id)) history.pushState(null, "", "#" + id); }
+    const pl = x.closest("[data-play]"); if (pl) { togglePlayer(+pl.dataset.play, pl); return; }
+    const a = x.closest('a[href^="#"]');
+    if (a) {
+      const h = a.getAttribute("href").slice(1);
+      if (/^e\d/.test(h)) { ev.preventDefault(); if (openSheet(h)) history.pushState(null, "", "#" + h); return; }
+      if (VIEWS.includes(h)) { ev.preventDefault(); go(h); return; }
+    }
   });
   document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#sheet").hidden) { closeSheet(); history.replaceState(null, "", "#" + current); } });
   window.addEventListener("hashchange", route);
-  window.addEventListener("popstate", () => { if (!/^#e\d/.test(location.hash)) closeSheet(); });
+  window.addEventListener("popstate", route);
   $("#q").addEventListener("input", ev => { fState.q = ev.target.value; renderAgenda(); });
   $$('input[name="smode"], input[name="slang"]').forEach(r => r.addEventListener("change", renderStory));
   $("#langBtn").addEventListener("click", () => {
@@ -648,6 +720,13 @@
   /* ---------- arranque ---------- */
   (async function init() {
     applyI18n(); renderOye(); setupForm();
+    const cached = C.API_URL && store.get("cache", null);
+    if (cached) {
+      VIDEOS = cached.videos || []; SHOWS = prepShows(cached.shows || []);
+      EVENTS = expand((cached.raw || []).concat(showsAsEvents(SHOWS)));
+      PLACES = (cached.places || []).filter(p => p && p.nombre);
+      loadState = "ok"; renderAll(); route();
+    } else { renderAll(); route(); }
     await loadData();
     renderAll(); route();
     fingerprint().then(fp => { FP = fp; });

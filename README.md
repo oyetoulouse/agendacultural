@@ -91,10 +91,10 @@ Pestaña **Lugares**: `estado, nombre, tipo, barrio, direccion, descripcion, ins
 
 ## Emisiones
 
-Pestaña **Emisiones**: `estado, numero, titulo, titulo_fr, fecha, hora_inicio, hora_fin, lugar, direccion, invitades, descripcion, descripcion_fr, youtube, spotify, instagram, imagen`.
+Pestaña **Emisiones**: `estado, numero, titulo, titulo_fr, fecha, hora_inicio, hora_fin, lugar, direccion, invitades, descripcion, descripcion_fr, vodio, instagram, imagen`.
 
 - Si una emisión tiene fecha y hora, aparece sola en la agenda y en el bloque **En vivo** del inicio mientras está al aire.
-- Cuando subas el video, pega el link de YouTube en `youtube`: la miniatura sale sola.
+- En `vodio` pega el **código de inserción** del episodio (el `<iframe…>` que da Vodio en «Intégrer») para que se escuche dentro de la app. Si pegas solo el link del episodio, sale un botón «Abrir en Vodio». Un link directo a un .mp3 también se reproduce en la app.
 
 ## Story de la semana
 
