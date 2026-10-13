@@ -82,11 +82,11 @@
       <p class="lede" data-i18n="send_lede">Lo revisamos y, si encaja con la agenda, lo publicamos en la app y lo compartimos en redes.</p>
       <form id="form" class="form" novalidate>
         <fieldset>
-          <legend data-i18n="fs_event">El evento</legend>
+          <h2 class="fs-title" data-i18n="fs_event">El evento</h2>
           <label class="f"><span data-i18n="l_titulo">Nombre del evento *</span><input id="f_titulo" required maxlength="90"></label>
           <label class="f"><span data-i18n="l_tipo">Tipo *</span><select id="f_categoria" required></select></label>
-          <div class="row">
-            <label class="f"><span data-i18n="l_fecha">Fecha *</span><input id="f_fecha" type="date" required></label>
+          <label class="f"><span data-i18n="l_fecha">Fecha *</span><input id="f_fecha" type="date" required></label>
+          <div class="row row-2">
             <label class="f"><span data-i18n="l_inicio">Inicio *</span><input id="f_inicio" type="time" required></label>
             <label class="f"><span data-i18n="l_fin">Fin</span><input id="f_fin" type="time"></label>
           </div>
@@ -97,7 +97,7 @@
         </fieldset>
 
         <fieldset>
-          <legend data-i18n="fs_where">Dónde</legend>
+          <h2 class="fs-title" data-i18n="fs_where">Dónde</h2>
           <label class="f"><span data-i18n="l_lugar">Lugar *</span><input id="f_lugar" required data-i18n-ph="ph_lugar"></label>
           <label class="f"><span data-i18n="l_dir">Dirección *</span><input id="f_dir" data-i18n-ph="ph_dir"></label>
           <label class="f"><span data-i18n="l_ciudad">Ciudad</span><input id="f_ciudad" value="Toulouse"></label>
@@ -105,14 +105,14 @@
         </fieldset>
 
         <fieldset>
-          <legend data-i18n="fs_who">Quién organiza</legend>
+          <h2 class="fs-title" data-i18n="fs_who">Quién organiza</h2>
           <label class="f"><span data-i18n="l_org">Organizador/a o colectivo *</span><input id="f_org" required></label>
           <label class="f"><span data-i18n="l_ig_org">Instagram de quien organiza</span><input id="f_ig_org" placeholder="@" autocapitalize="off"></label>
           <label class="f"><span data-i18n="l_tags">Otras cuentas a etiquetar</span><input id="f_ig_tags" placeholder="@artista @dj @colectivo" autocapitalize="off"><span class="hint" data-i18n="h_tags">Artistas, DJs, colectivos aliados… separadas por espacio.</span></label>
         </fieldset>
 
         <fieldset>
-          <legend data-i18n="fs_price">Precio</legend>
+          <h2 class="fs-title" data-i18n="fs_price">Precio</h2>
           <div class="seg" role="radiogroup">
             <label><input type="radio" name="tipo_precio" value="Gratis" checked><span data-i18n="p_gratis">Gratis</span></label>
             <label><input type="radio" name="tipo_precio" value="Prix libre"><span>Prix libre</span></label>
@@ -123,7 +123,7 @@
         </fieldset>
 
         <fieldset>
-          <legend data-i18n="fs_flyer">Flyer y contacto</legend>
+          <h2 class="fs-title" data-i18n="fs_flyer">Flyer y contacto</h2>
           <label class="f"><span data-i18n="l_flyer">Flyer (opcional)</span><input id="f_flyer" type="file" accept="image/*"><span class="hint" data-i18n="h_flyer">Imagen JPG o PNG. La reducimos automáticamente.</span></label>
           <img id="flyerPreview" class="flyer-prev" alt="" hidden>
           <label class="f"><span data-i18n="l_contacto">Tu email o WhatsApp *</span><input id="f_contacto" required data-i18n-ph="ph_contacto"><span class="hint" data-i18n="h_contacto">Solo para escribirte si falta algo.</span></label>
@@ -160,7 +160,7 @@
       <p class="lede" data-i18n="join_lede">Cuéntanos de tu lugar o proyecto. Lo revisamos y te avisamos cuando esté publicado.</p>
       <form id="joinForm" class="form" novalidate>
         <fieldset>
-          <legend data-i18n="join_fs1">Tu lugar o proyecto</legend>
+          <h2 class="fs-title" data-i18n="join_fs1">Tu lugar o proyecto</h2>
           <label class="f"><span data-i18n="j_nombre">Nombre *</span><input id="j_nombre" required maxlength="80"></label>
           <label class="f"><span data-i18n="j_tipo">Tipo *</span>
             <select id="j_tipo" required>
@@ -179,14 +179,14 @@
           <label class="f check"><input type="checkbox" id="j_eventos"><span data-i18n="j_eventos">Organizamos o recibimos eventos de la comunidad con frecuencia</span></label>
         </fieldset>
         <fieldset>
-          <legend data-i18n="fs_where">Dónde</legend>
+          <h2 class="fs-title" data-i18n="fs_where">Dónde</h2>
           <label class="f"><span data-i18n="j_dir">Dirección (opcional)</span><input id="j_dir"></label>
           <label class="f"><span data-i18n="j_barrio">Barrio</span><input id="j_barrio" data-i18n-ph="ph_barrio"></label>
           <label class="f">Instagram<input id="j_ig" placeholder="@" autocapitalize="off"></label>
           <label class="f"><span data-i18n="j_link">Web</span><input id="j_link" type="url" placeholder="https://"></label>
         </fieldset>
         <fieldset>
-          <legend data-i18n="j_fs3">Contacto</legend>
+          <h2 class="fs-title" data-i18n="j_fs3">Contacto</h2>
           <label class="f"><span data-i18n="l_contacto">Tu email o WhatsApp *</span><input id="j_contacto" required data-i18n-ph="ph_contacto"><span class="hint" data-i18n="h_contacto">Solo para escribirte si falta algo.</span></label>
           <label class="hp" aria-hidden="true">-<input id="j_web" tabindex="-1" autocomplete="off"></label>
           <label class="f check"><input type="checkbox" id="j_ok" required><span data-i18n="j_ok">Acepto que Oye Toulouse publique esta información en la app.</span></label>
