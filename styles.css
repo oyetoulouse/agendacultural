@@ -328,3 +328,30 @@ body.has-mini .toast{bottom:calc(var(--nav-h) + 110px + env(safe-area-inset-bott
 .refresh svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .refresh.spin svg{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.tl-time.allday{font-family:var(--body);font-size:.82rem;font-weight:800;line-height:1.15;color:var(--azul)}
+
+/* ---------- v6: botón de inicio, Instagram, directorio ---------- */
+.home-btn{background:transparent;border:0;box-shadow:none;width:68px;height:68px;margin-top:-32px;overflow:visible}
+.home-btn img{width:68px;height:68px;margin:0;object-fit:contain;filter:drop-shadow(0 3px 0 var(--noche)) drop-shadow(0 4px 8px rgba(10,25,50,.35));transition:transform .15s}
+.tab-home[aria-current="page"] .home-btn{border:0;box-shadow:none}
+.tab-home[aria-current="page"] .home-btn img{transform:scale(1.08)}
+.seg-2{grid-template-columns:1fr 1fr}
+.seg-4{grid-template-columns:repeat(4,1fr)}
+.seg-4 span{font-size:.82rem;padding-inline:2px}
+.story-imgs.is-post img{aspect-ratio:4/5;width:min(300px,76vw)}
+.caption-box{margin-top:16px;background:var(--papel);color:var(--tinta);border-radius:18px;padding:14px;display:grid;gap:8px}
+.caption-h{margin:0;font-family:var(--display);font-size:1.2rem;color:var(--azul)}
+.caption-box textarea{width:100%;min-width:0;border:2px solid var(--papel-2);border-radius:10px;padding:10px;font:inherit;font-size:.88rem;color:var(--tinta);background:#fff;resize:vertical}
+.caption-box .btn-big{margin-top:0}
+.actions{grid-template-columns:repeat(4,1fr)}
+.act-story{background:var(--rosa)}
+.ev-share{margin-top:14px;background:var(--azul);border-radius:18px;padding:14px}
+.ev-share .story-imgs img{width:min(240px,62vw)}
+.none.dark{background:rgba(255,255,255,.15);color:#fff}
+.hint-dark{margin:10px 0 0;color:#fff;font-size:.88rem}
+.join-cta{margin:0 0 6px;box-shadow:6px 6px 0 var(--rosa)}
+.tag.hot{background:var(--rosa);color:var(--tinta)}
+.place-evs{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:4px}
+.place-evs a{display:block;text-decoration:none;color:var(--tinta);font-size:.9rem;padding:6px 10px;border-radius:10px;background:var(--papel-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.place-evs b{color:var(--rosa-txt);margin-right:4px}
+@media (max-width:380px){.actions{grid-template-columns:repeat(2,1fr)}}

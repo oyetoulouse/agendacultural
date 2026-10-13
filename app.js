@@ -29,6 +29,7 @@
     sel.innerHTML = `<option value="">${esc(t("choose"))}</option>` + Object.keys(CATS).filter(c => c !== "Oye en vivo").map(c => `<option value="${c}">${esc(catName(c))}</option>`).join("");
     sel.value = v;
     const sl = $(`input[name="slang"][value="${store.get("slang", "bi")}"]`); if (sl) sl.checked = true;
+    const sf = $(`input[name="sfmt"][value="${store.get("sfmt", "story")}"]`); if (sf) sf.checked = true;
   }
 
   /* ---------- categorías ---------- */
@@ -64,8 +65,14 @@
   const igHandle = s => String(s || "").trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/[\/?#].*$/, "");
   const igList = s => String(s || "").split(/[\s,;]+/).map(igHandle).filter(Boolean);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const isFree = p => /gratis|gratuit|free|^0\s*€?$/i.test(String(p || "").trim()) || String(p || "").trim() === "";
+  const isFree = p => /gratis|gratuit|free|^0\s*€?$/i.test(String(p || "").trim());
   const safeUrl = u => /^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
+  // Imagen: acepta un link normal o un link de Google Drive ("Compartir → copiar enlace") y lo convierte en imagen
+  const imgUrl = u => {
+    u = safeUrl(u); if (!u) return "";
+    const m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{20,})/) || u.match(/docs\.google\.com\/uc\?.*id=([\w-]{20,})/);
+    return m ? "https://lh3.googleusercontent.com/d/" + m[1] + "=w1200" : u;
+  };
   const ytId = u => { const m = String(u || "").match(/(?:youtu\.be\/|v=|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/); return m ? m[1] : ""; };
 
   /* textos que dependen del idioma */
@@ -127,7 +134,7 @@
       const start = d ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), t0 ? t0[0] : 0, t0 ? t0[1] : 0) : null;
       let end = start && t1 ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), t1[0], t1[1]) : (start ? new Date(start.getTime() + 90 * 6e4) : null);
       if (start && end <= start) end = addDays(end, 1);
-      return Object.assign({}, r, { start, end, hasTime: !!t0, yt: safeUrl(r.youtube), ytid: ytId(r.youtube), imagen: safeUrl(r.imagen), media: vodioMedia(r.vodio || r.audio || r.spotify) });
+      return Object.assign({}, r, { start, end, hasTime: !!t0, yt: safeUrl(r.youtube), ytid: ytId(r.youtube), imagen: imgUrl(r.imagen), media: vodioMedia(r.vodio || r.audio || r.spotify) });
     }).sort((a, b) => (b.start || 0) - (a.start || 0));
   }
   // cada emisión con fecha y hora entra también a la agenda, así aparece en "En vivo"
@@ -151,7 +158,8 @@
       let d1 = parseDate(r.fecha_fin) || d0;
       if (demoShift) { d0 = addDays(d0, demoShift); d1 = addDays(d1, demoShift); }
       if (d1 < d0) d1 = d0;
-      const t0 = parseTime(r.hora_inicio) || [0, 0], t1 = parseTime(r.hora_fin);
+      const tIni = parseTime(r.hora_inicio), allDay = !tIni;
+      const t0 = tIni || [0, 0], t1 = allDay ? [23, 59] : parseTime(r.hora_fin);
       const multi = ymd(d0) !== ymd(d1);
       let k = 0;
       for (let d = new Date(d0); d <= d1 && k < 62; d = addDays(d, 1), k++) {
@@ -163,12 +171,12 @@
           id: "e" + i + (multi ? "-" + k : ""), base: "e" + i,
           titulo: String(r.titulo).trim(), titulo_fr: String(r.titulo_fr || "").trim(),
           categoria: CATS[r.categoria] ? r.categoria : "Otro",
-          start, end, hasEnd: !!t1, multi, desde: d0, hasta: d1,
+          start, end, hasEnd: !!t1 && !allDay, allDay, multi, desde: d0, hasta: d1,
           lugar: r.lugar || "", direccion: r.direccion || "", ciudad: r.ciudad || "Toulouse",
           ig_lugar: igHandle(r.ig_lugar), organizador: r.organizador || "", ig_organizador: igHandle(r.ig_organizador),
-          ig_etiquetas: igList(r.ig_etiquetas), precio: String(r.precio || "").trim() || "Gratis", gratis: isFree(r.precio),
+          ig_etiquetas: igList(r.ig_etiquetas), precio: String(r.precio || "").trim(), gratis: isFree(r.precio),
           descripcion: r.descripcion || "", descripcion_fr: r.descripcion_fr || "",
-          link: safeUrl(r.link), imagen: safeUrl(r.imagen), isShow: r.categoria === "Oye en vivo"
+          link: safeUrl(r.link), imagen: imgUrl(r.imagen), isShow: r.categoria === "Oye en vivo"
         });
       }
     });
@@ -187,23 +195,25 @@
     cal: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>',
     share: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+    story: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><circle cx="12" cy="11" r="3"/></svg>',
     pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>',
     mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
   };
 
   const igLink = h => h ? `<a class="ig" href="https://instagram.com/${encodeURIComponent(h)}" target="_blank" rel="noopener">@${esc(h)}</a>` : "";
   const mapsUrl = e => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent([e.lugar, e.direccion, e.ciudad].filter(Boolean).join(", "));
-  const timeRange = e => e.hasEnd ? `${hm(e.start)} – ${hm(e.end)}` : hm(e.start);
+  const timeRange = e => e.allDay ? t("all_day") : e.hasEnd ? `${hm(e.start)} – ${hm(e.end)}` : hm(e.start);
+  const timeShort = e => e.allDay ? t("all_day_s") : hm(e.start);
   const relDay = d => { const diff = Math.round((startOfDay(d) - startOfDay(now())) / 864e5); return diff === 0 ? t("today") : diff === 1 ? t("tomorrow_l") : ""; };
   const dayLabel = d => { const r = relDay(d), base = `${fDay(d)} ${fDate(d)}`; return r ? r + " · " + base : base; };
 
   /* ---------- tarjetas ---------- */
   function tlItem(e, opts = {}) {
     const tags = [`<span class="tag cat" style="--c:${catColor(e.categoria)}">${esc(catName(e.categoria))}</span>`,
-      `<span class="tag ${e.gratis ? "free" : ""}">${esc(T.price(e))}</span>`];
+      T.price(e) ? `<span class="tag ${e.gratis ? "free" : ""}">${esc(T.price(e))}</span>` : ""];
     if (favs.has(e.base)) tags.push(`<span class="tag fav">${esc(t("fav"))}</span>`);
     return `<li><a class="tl ${e.isShow ? "is-show" : ""}" href="#${e.id}">
-      <span class="tl-time">${hm(e.start)}${opts.until && e.hasEnd ? `<small>${esc(t("until", { h: hm(e.end) }))}</small>` : ""}</span>
+      <span class="tl-time ${e.allDay ? "allday" : ""}">${timeShort(e)}${opts.until && e.hasEnd ? `<small>${esc(t("until", { h: hm(e.end) }))}</small>` : ""}</span>
       <span class="tl-body">
         <p class="tl-title">${esc(T.title(e))}</p>
         <span class="tl-where">${IC.pin}<span>${esc(e.lugar)}${e.organizador && e.organizador !== e.lugar ? ` · ${esc(e.organizador)}` : ""}</span></span>
@@ -217,7 +227,7 @@
     $("#hoyDia").textContent = cap(fDay(n));
     $("#hoyTitle").textContent = fDate(n);
 
-    const live = EVENTS.filter(e => e.start <= n && e.end > n);
+    const live = EVENTS.filter(e => !e.allDay && e.start <= n && e.end > n);
     if (!live.length && C.DEMO_MODE && !C.API_URL && !nowOverride) {
       const todays = EVENTS.filter(e => ymd(e.start) === ymd(n));
       const nx = todays.find(e => e.end > n) || todays[todays.length - 1];
@@ -241,7 +251,7 @@
             ${e.isShow ? `<span class="show-flag">${IC.mic} ${esc(t("live_show"))}</span>` : ""}
             <p class="live-title">${esc(T.title(e))}</p>
             <span class="live-where">${IC.pin}<span>${esc(e.lugar)}${e.direccion ? " · " + esc(e.direccion.replace(/,\s*Toulouse$/i, "")) : ""}</span></span>
-            <span class="live-meta"><span>${timeRange(e)}</span><span>${esc(t("left", { t: leftTxt }))}</span><span>${esc(T.price(e))}</span></span>
+            <span class="live-meta"><span>${timeRange(e)}</span><span>${esc(t("left", { t: leftTxt }))}</span>${T.price(e) ? `<span>${esc(T.price(e))}</span>` : ""}</span>
             <span class="bar" aria-hidden="true"><b style="width:${pct}%"></b></span></a>`;
         }).join("") + `</div>`;
     } else {
@@ -252,7 +262,7 @@
           <span class="live-meta"><span>${esc(cap(t("at", { d: relDay(nx.start) || fDay(nx.start) + " " + fDate(nx.start), h: hm(nx.start) })))}</span></span></a>`
           : `<p class="live-item">${esc(t("no_events"))}</p>`) + `</div>`;
     }
-    const later = EVENTS.filter(e => ymd(e.start) === ymd(n) && e.start > n);
+    const later = EVENTS.filter(e => ymd(e.start) === ymd(n) && (e.start > n || (e.allDay && e.end > n)));
     $("#laterList").innerHTML = later.length ? later.map(e => tlItem(e, { until: true })).join("") : `<li class="none">${t("no_more_today")}</li>`;
     const tm = ymd(addDays(n, 1)), tom = EVENTS.filter(e => ymd(e.start) === tm);
     $("#tomorrowList").innerHTML = tom.length ? tom.map(e => tlItem(e)).join("") : `<li class="none">${esc(t("none_tomorrow"))}</li>`;
@@ -328,7 +338,7 @@
         <div class="fact">${IC.clock}<div><div class="fact-k">${esc(t("when"))}</div><div class="fact-v">${when}</div></div></div>
         ${e.lugar ? `<div class="fact">${IC.place}<div><div class="fact-k">${esc(t("where"))}</div><div class="fact-v"><a href="${mapsUrl(e)}" target="_blank" rel="noopener">${esc(e.lugar)}</a> ${igLink(e.ig_lugar)}<small>${esc(addr)}</small></div></div></div>` : ""}
         ${e.organizador && !orgSame ? `<div class="fact">${IC.org}<div><div class="fact-k">${esc(t("org"))}</div><div class="fact-v">${esc(e.organizador)} ${igLink(e.ig_organizador)}</div></div></div>` : ""}
-        <div class="fact">${IC.euro}<div><div class="fact-k">${esc(t("price"))}</div><div class="fact-v">${esc(T.price(e))}</div></div></div>
+        ${T.price(e) ? `<div class="fact">${IC.euro}<div><div class="fact-k">${esc(t("price"))}</div><div class="fact-v">${esc(T.price(e))}</div></div></div>` : ""}
         ${e.ig_etiquetas.length ? `<div class="fact">${IC.tag}<div><div class="fact-k">${esc(t("with"))}</div><div class="fact-v">${e.ig_etiquetas.map(igLink).join(" ")}</div></div></div>` : ""}
       </div>
       ${desc ? `<p class="desc">${esc(desc)}</p>` : ""}
@@ -336,7 +346,9 @@
         <button class="act" type="button" data-fav="${e.base}" aria-pressed="${fav}">${IC.star}<span>${esc(fav ? t("fav_on") : t("fav"))}</span></button>
         <button class="act" type="button" data-ics="${e.id}">${IC.cal}<span>${esc(t("cal"))}</span></button>
         <button class="act" type="button" data-share="${e.id}">${IC.share}<span>${esc(t("share"))}</span></button>
+        <button class="act act-story" type="button" data-evstory="${e.id}">${IC.story}<span>${esc(t("ev_story"))}</span></button>
       </div>
+      <div class="ev-share" id="evShare" hidden></div>
       ${e.link ? `<a class="btn-big" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.isShow ? t("watch") : t("tickets"))}</a>` : ""}
       ${e.lugar ? `<a class="btn-big alt" href="${mapsUrl(e)}" target="_blank" rel="noopener">${esc(t("directions"))}</a>` : ""}`;
     $("#sheet").hidden = false; $("#sheetBack").hidden = false;
@@ -397,25 +409,61 @@
   async function shareEvent(id) {
     const e = EVENTS.find(x => x.id === id); if (!e) return;
     const url = location.href.split("#")[0] + "#" + e.base;
-    const text = `${T.title(e)} · ${cap(fDay(e.start))} ${fDate(e.start)}, ${hm(e.start)} · ${e.lugar}`;
+    const text = `${T.title(e)} · ${cap(fDay(e.start))} ${fDate(e.start)}${e.allDay ? "" : ", " + hm(e.start)}${e.lugar ? " · " + e.lugar : ""}`;
     if (navigator.share) { try { await navigator.share({ title: T.title(e), text, url }); return; } catch (err) { if (err && err.name === "AbortError") return; } }
     window.open("https://wa.me/?text=" + encodeURIComponent(text + "\n" + url), "_blank", "noopener");
   }
 
   /* ---------- LUGARES ---------- */
   let placeType = "";
+  const normName = x => String(x || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/^(le|la|les|l'|el|los|las)\s*/, "").replace(/[^a-z0-9]+/g, "");
+  function placeEvents(p) {
+    const k = normName(p.nombre), n = now(); if (!k) return [];
+    const seen = new Set();
+    return EVENTS.filter(e => e.end > n && normName(e.lugar) === k).filter(e => { if (seen.has(e.base)) return false; seen.add(e.base); return true; });
+  }
   function renderLugares() {
     const types = Array.from(new Set(PLACES.map(p => p.tipo).filter(Boolean)));
     $("#lugarFilters").innerHTML = `<button class="chip" type="button" data-ptype="" aria-pressed="${!placeType}">${esc(t("all"))}</button>` +
+      `<button class="chip" type="button" data-ptype="__activos" aria-pressed="${placeType === "__activos"}">${esc(t("with_events"))}</button>` +
       types.map(x => `<button class="chip" type="button" data-ptype="${esc(x)}" aria-pressed="${placeType === x}">${esc(x)}</button>`).join("");
-    const list = PLACES.filter(p => !placeType || p.tipo === placeType);
-    $("#placeList").innerHTML = list.length ? list.map(p => {
-      const ig = igHandle(p.instagram), q = encodeURIComponent([p.nombre, p.direccion].filter(Boolean).join(", "));
+    const withEv = PLACES.map(p => ({ p, evs: placeEvents(p) }));
+    let list = withEv.filter(({ p, evs }) => !placeType || (placeType === "__activos" ? evs.length : p.tipo === placeType));
+    list.sort((a, b) => b.evs.length - a.evs.length || String(a.p.nombre).localeCompare(b.p.nombre));
+    $("#placeList").innerHTML = list.length ? list.map(({ p, evs }) => {
+      const ig = igHandle(p.instagram), q = encodeURIComponent([p.nombre, p.direccion || "", "Toulouse"].filter(Boolean).join(", "));
       const d = LANG === "fr" ? (p.descripcion_fr || p.descripcion) : p.descripcion;
-      return `<div class="place"><div class="place-top"><h3>${esc(p.nombre)}</h3>${p.tipo ? `<span class="tag">${esc(p.tipo)}</span>` : ""}</div>
-        <p>${esc(d || "")}${p.barrio ? ` <b>· ${esc(p.barrio)}</b>` : ""}</p>
+      return `<div class="place"><div class="place-top"><h3>${esc(p.nombre)}</h3>${p.tipo ? `<span class="tag">${esc(p.tipo)}</span>` : ""}${evs.length ? `<span class="tag hot">${esc(evs.length === 1 ? t("n_event") : t("n_events", { n: evs.length }))}</span>` : ""}</div>
+        ${d || p.barrio ? `<p>${esc(d || "")}${p.barrio ? ` <b>· ${esc(p.barrio)}</b>` : ""}</p>` : ""}
+        ${evs.length ? `<ul class="place-evs">${evs.slice(0, 3).map(e => `<li><a href="#${e.id}"><b>${esc(cap(fDay(e.start).slice(0, 3)))} ${e.start.getDate()}</b> ${esc(T.title(e))}</a></li>`).join("")}</ul>` : ""}
         <div class="place-links"><a href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">${esc(t("map"))}</a>${igLink(ig)}${safeUrl(p.link) ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">Web</a>` : ""}</div></div>`;
     }).join("") : `<p class="none">${esc(t("no_places"))}</p>`;
+  }
+
+  /* ---------- formulario: sumarse al directorio ---------- */
+  function setupJoinForm() {
+    $("#joinForm").addEventListener("submit", async ev => {
+      ev.preventDefault();
+      const err = $("#joinErr"); err.hidden = true;
+      $$("#joinForm .f.invalid").forEach(x => x.classList.remove("invalid"));
+      const bad = ["j_nombre", "j_tipo", "j_contacto"].filter(id => !$("#" + id).value.trim());
+      if ($("#j_link").value.trim() && !safeUrl($("#j_link").value)) bad.push("j_link");
+      if (bad.length || !$("#j_ok").checked) {
+        bad.forEach(id => $("#" + id).closest(".f").classList.add("invalid"));
+        err.textContent = bad.length ? t("err_fields") : t("err_ok"); err.hidden = false; return;
+      }
+      if ($("#j_web").value) return;
+      const data = { tipo_envio: "lugar", nombre: $("#j_nombre").value.trim(), tipo: $("#j_tipo").value, barrio: $("#j_barrio").value.trim(),
+        direccion: $("#j_dir").value.trim(), descripcion: $("#j_desc").value.trim(), instagram: igHandle($("#j_ig").value),
+        link: safeUrl($("#j_link").value), eventos: $("#j_eventos").checked ? "sí" : "no", contacto: $("#j_contacto").value.trim(), idioma_form: LANG };
+      const btn = $("#joinBtn"); btn.disabled = true; btn.textContent = t("sending");
+      try {
+        if (C.API_URL) await fetch(C.API_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(data) });
+        $("#joinForm").reset(); $("#joinForm").hidden = true; $("#joinSent").hidden = false; window.scrollTo(0, 0);
+      } catch (e) { err.textContent = t("err_send"); err.hidden = false; }
+      finally { btn.disabled = false; btn.textContent = t("join_btn"); }
+    });
+    $("#joinAnother").addEventListener("click", () => { $("#joinSent").hidden = true; $("#joinForm").hidden = false; });
   }
 
   /* ---------- EMISIONES (podcast en Vodio) ---------- */
@@ -506,7 +554,7 @@
       const dm = dur.match(/^(\d+):(\d{2}):(\d{2})$/);
       if (dm) dur = (+dm[1] ? +dm[1] + " h " + dm[2] : +dm[2]) + " min";
       return { title: (title.replace(/^#\s*\d+\s*/, "").replace(/\s*[-–]\s*\d{1,2}[.\/]\d{1,2}[.\/]\d{2,4}\s*$/, "").trim()) || title, num: m ? m[1] : "", date: isNaN(d) ? null : d, dur,
-        audio: e.audio, link: safeUrl(e.link), imagen: safeUrl(e.imagen), desc: String(e.descripcion || "").trim() };
+        audio: e.audio, link: safeUrl(e.link), imagen: imgUrl(e.imagen), desc: String(e.descripcion || "").trim() };
     }).sort((a, b) => (b.date || 0) - (a.date || 0));
   }
   // por si el script aún no trae el podcast: intentar leer el RSS directo desde el navegador
@@ -590,25 +638,61 @@
     if (C.EMAIL) { $("#mailTxt").textContent = C.EMAIL; $("#mailCard").hidden = false; }
   }
 
-  /* ---------- STORY ---------- */
+  /* ---------- STORIES Y PUBLICACIONES ---------- */
   let storyBusy = 0;
+  const appUrlShort = () => (C.APP_URL || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  function rangeFor(mode, n) {
+    const t0 = startOfDay(n);
+    if (mode === "hoy") return [n, addDays(t0, 1), n];
+    if (mode === "semana") return [n, addDays(t0, 7), n];
+    if (mode === "quincena") return [n, addDays(t0, 14), n];
+    const [w0, w1] = weekendRange(n); return [w0 < n ? n : w0, w1, w0];
+  }
+  async function filesFrom(canvases, base) {
+    const blobs = await Promise.all(canvases.map(c => new Promise(r => c.toBlob(r, "image/png"))));
+    return blobs.map((b, i) => new File([b], `${base}${canvases.length > 1 ? "-" + (i + 1) : ""}.png`, { type: "image/png" }));
+  }
+  function shareUI(box, canvases, files, extraHtml, ratio) {
+    box.innerHTML = `<div class="story-imgs ${ratio === "post" ? "is-post" : ""}">${canvases.map((c, i) => `<img src="${c.toDataURL("image/jpeg", .8)}" alt="${i + 1}/${canvases.length}">`).join("")}</div>
+      <div class="story-actions">
+        <button class="btn-big" type="button" data-sh="share">${esc(t("s_share"))}</button>
+        <button class="btn-big alt" type="button" data-sh="dl">${esc(t("s_download"))}${canvases.length > 1 ? ` (${canvases.length})` : ""}</button>
+      </div>${extraHtml || ""}`;
+    const sh = box.querySelector('[data-sh="share"]');
+    if (!(navigator.canShare && navigator.canShare({ files }))) sh.hidden = true;
+    sh.onclick = async () => { try { await navigator.share({ files }); } catch (e) { } };
+    box.querySelector('[data-sh="dl"]').onclick = () => { files.forEach((f, i) => setTimeout(() => saveBlob(f, f.name), i * 400)); toast(t("s_saved")); };
+  }
+  function captionFor(list, mode, lA, bi, rangeTxt) {
+    const head = { finde: ["Este finde", "Ce week-end"], hoy: ["Hoy", "Aujourd'hui"], semana: ["Esta semana", "Cette semaine"], quincena: ["Las próximas dos semanas", "Les deux prochaines semaines"] }[mode];
+    const title = bi ? `${head[0]} · ${head[1]}` : head[lA === "fr" ? 1 : 0];
+    let out = `✦ ${title.toUpperCase()} · ${rangeTxt} ✦\n`;
+    let lastDay = "";
+    list.forEach(e => {
+      const k = ymd(e.start);
+      if (k !== lastDay) { lastDay = k; out += `\n📅 ${cap(fDay(e.start, lA))} ${fDate(e.start, lA)}\n`; }
+      const tags = [e.ig_organizador, e.ig_lugar].filter(Boolean).map(h => "@" + h).join(" ");
+      const title2 = (lA === "fr" && e.titulo_fr) || e.titulo;
+      out += `• ${e.allDay ? "" : hm(e.start) + " · "}${title2}${e.lugar ? " — " + e.lugar : ""}${tags ? " " + tags : ""}\n`;
+    });
+    out += `\n${bi ? "Toda la agenda en la app 👉 link en bio\nTout l'agenda sur l'appli 👉 lien en bio" : lA === "fr" ? "Tout l'agenda sur l'appli 👉 lien en bio" : "Toda la agenda en la app 👉 link en bio"}\n`;
+    out += `\n#OyeToulouse #ToulouseLatina #AgendaCultural #Toulouse #LatinosEnToulouse #CultureLatino`;
+    return out;
+  }
   async function renderStory() {
     if (!window.OyeStory) return;
     const job = ++storyBusy;
     const mode = ($('input[name="smode"]:checked') || {}).value || "finde";
     const sl = ($('input[name="slang"]:checked') || {}).value || "bi";
-    store.set("slang", sl);
-    const n = now(), t0 = startOfDay(n);
-    let from, to;
-    if (mode === "hoy") { from = n; to = addDays(t0, 1); }
-    else if (mode === "semana") { from = n; to = addDays(t0, 7); }
-    else { [from, to] = weekendRange(n); if (from < n) from = n; }
+    const fmt = ($('input[name="sfmt"]:checked') || {}).value || "story";
+    store.set("slang", sl); store.set("sfmt", fmt);
+    const n = now();
+    const [from, to, d0] = rangeFor(mode, n);
     const seen = new Set();
     const list = EVENTS.filter(e => e.end > from && e.start < to).filter(e => { if (seen.has(e.base)) return false; seen.add(e.base); return true; });
     const prev = $("#storyPrev");
     if (!list.length) { prev.innerHTML = `<p class="none">${esc(t("s_empty"))}</p>`; return; }
     prev.innerHTML = `<p class="none">…</p>`;
-
     const lA = sl === "fr" ? "fr" : "es", bi = sl === "bi";
     const dayTxt = d => bi ? `${fDay(d, "es")} ${d.getDate()} · ${fDay(d, "fr")} ${d.getDate()}`.toUpperCase() : `${fDay(d, lA)} ${fDate(d, lA)}`.toUpperCase();
     const groups = [];
@@ -616,32 +700,60 @@
       const d = e.start < from ? startOfDay(from) : startOfDay(e.start), k = ymd(d);
       let g = groups.find(x => x.k === k); if (!g) { g = { k, label: dayTxt(d), items: [] }; groups.push(g); }
       const title = (lA === "fr" && e.titulo_fr) || e.titulo;
-      const price = e.gratis ? (bi ? "Gratis · Gratuit" : I18N[lA].free) : e.precio;
-      g.items.push({ time: hm(e.start), timeSub: e.multi ? "→ " + pad(e.hasta.getDate()) + "/" + pad(e.hasta.getMonth() + 1) : "", title, sub: e.lugar, price, free: e.gratis });
+      const price = e.gratis ? (bi ? "Gratis · Gratuit" : I18N[lA].free) : (e.precio || "");
+      g.items.push({ time: e.allDay ? "—" : hm(e.start), timeSub: e.multi ? "→ " + pad(e.hasta.getDate()) + "/" + pad(e.hasta.getMonth() + 1) : "", title, sub: e.lugar, price, free: e.gratis });
     });
-    const titles = { finde: ["ESTE FINDE", "CE WEEK-END"], hoy: ["HOY", "AUJOURD'HUI"], semana: ["ESTA SEMANA", "CETTE SEMAINE"] }[mode];
-    const d0 = mode === "finde" ? weekendRange(n)[0] : n, d1 = addDays(to, -1);
+    const titles = { finde: ["ESTE FINDE", "CE WEEK-END"], hoy: ["HOY", "AUJOURD'HUI"], semana: ["ESTA SEMANA", "CETTE SEMAINE"], quincena: ["AGENDA", "AGENDA"] }[mode];
+    const d1 = addDays(to, -1);
     const mon = d => I18N[lA].months[d.getMonth()].slice(0, 3).toUpperCase();
     const rangeTxt = ymd(d0) === ymd(d1) ? `${d0.getDate()} ${mon(d0)}` : d0.getMonth() === d1.getMonth() ? `${d0.getDate()}–${d1.getDate()} ${mon(d1)}` : `${d0.getDate()} ${mon(d0)} – ${d1.getDate()} ${mon(d1)}`;
+    const t1 = bi ? titles[0] : titles[lA === "fr" ? 1 : 0];
+    const t2 = bi && titles[1] !== titles[0] ? titles[1] : (mode === "quincena" ? (bi ? "CULTURAL LATINA · CULTURELLE LATINO" : lA === "fr" ? "CULTURELLE LATINO" : "CULTURAL LATINA") : "");
     const canvases = await window.OyeStory.render({
-      title: bi ? titles[0] : titles[lA === "fr" ? 1 : 0], title2: bi ? titles[1] : "",
-      rangeTxt, groups, instagram: igHandle(C.INSTAGRAM) || "oyetoulouse",
+      format: fmt, title: t1, title2: t2, rangeTxt, groups, instagram: igHandle(C.INSTAGRAM) || "oyetoulouse",
+      kicker: bi ? "Agenda cultural latina · Toulouse" : lA === "fr" ? "Agenda culturel latino · Toulouse" : "Agenda cultural latina · Toulouse",
+      countTxt: `${list.length} ${bi ? "eventos · événements" : lA === "fr" ? "événements" : "eventos"}`,
+      swipe: bi ? "Desliza → · Swipe →" : lA === "fr" ? "Faites défiler →" : "Desliza →",
       footer: bi ? "Toda la agenda en la app · Tout l'agenda sur l'appli" : (lA === "fr" ? "Tout l'agenda sur l'appli" : "Toda la agenda en la app"),
-      url: (C.APP_URL || "").replace(/^https?:\/\//, "").replace(/\/$/, "")
+      url: appUrlShort()
     });
     if (job !== storyBusy) return;
-    const blobs = await Promise.all(canvases.map(c => new Promise(r => c.toBlob(r, "image/png"))));
-    const name = i => `oye-${mode}-${ymd(d0)}${canvases.length > 1 ? "-" + (i + 1) : ""}.png`;
-    const files = blobs.map((b, i) => new File([b], name(i), { type: "image/png" }));
-    prev.innerHTML = `<div class="story-imgs">${canvases.map((c, i) => `<img src="${c.toDataURL("image/jpeg", .8)}" alt="Story ${i + 1}/${canvases.length}">`).join("")}</div>
-      <div class="story-actions">
-        <button class="btn-big" type="button" id="storyShare">${esc(t("s_share"))}</button>
-        <button class="btn-big alt" type="button" id="storyDl">${esc(t("s_download"))}${canvases.length > 1 ? ` (${canvases.length})` : ""}</button>
-      </div>`;
-    const canShare = navigator.canShare && navigator.canShare({ files });
-    if (!canShare) $("#storyShare").hidden = true;
-    $("#storyShare").onclick = async () => { try { await navigator.share({ files }); } catch (e) { } };
-    $("#storyDl").onclick = () => { files.forEach((f, i) => setTimeout(() => saveBlob(f, f.name), i * 400)); toast(t("s_saved")); };
+    const files = await filesFrom(canvases, `oye-${fmt}-${mode}-${ymd(d0)}`);
+    const caption = captionFor(list, mode, lA, bi, rangeTxt);
+    shareUI(prev, canvases, files, fmt === "post" ? `
+      <div class="caption-box">
+        <p class="caption-h">${esc(t("caption_h"))}</p>
+        <textarea id="captionTxt" rows="8" readonly>${esc(caption)}</textarea>
+        <button class="btn-big alt" type="button" id="copyCaption">${esc(t("caption_copy"))}</button>
+      </div>` : "", fmt);
+    const cb = $("#copyCaption");
+    if (cb) cb.onclick = async () => {
+      const ta = $("#captionTxt");
+      try { await navigator.clipboard.writeText(ta.value); toast(t("copied")); }
+      catch (e) { ta.removeAttribute("readonly"); ta.focus(); ta.select(); toast(t("copy_manual")); }
+    };
+  }
+
+  /* story de un solo evento */
+  async function shareEventStory(id) {
+    const e = EVENTS.find(x => x.id === id); if (!e || !window.OyeStory) return;
+    const box = $("#evShare"); box.hidden = false;
+    box.innerHTML = `<p class="none dark">…</p>`;
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const lA = LANG;
+    const c = await window.OyeStory.renderEvent({
+      title: T.title(e), cat: catName(e.categoria),
+      dayTxt: cap(e.multi ? t("range", { a: fDate(e.desde), b: fDate(e.hasta) }) : `${fDay(e.start)} ${fDate(e.start)}`),
+      timeTxt: timeRange(e), place: e.lugar, address: e.direccion && e.direccion !== e.lugar ? e.direccion : "",
+      org: e.organizador && e.organizador !== e.lugar ? `${t("org")}: ${e.organizador}${e.ig_organizador ? " @" + e.ig_organizador : ""}` : (e.ig_organizador ? "@" + e.ig_organizador : ""),
+      price: T.price(e), free: e.gratis, img: e.imagen, instagram: igHandle(C.INSTAGRAM) || "oyetoulouse",
+      kicker: lA === "fr" ? "Agenda culturel latino · Toulouse" : "Agenda cultural latina · Toulouse",
+      footer: lA === "fr" ? "Tout l'agenda sur l'appli" : "Toda la agenda en la app", url: appUrlShort()
+    });
+    let files;
+    try { files = await filesFrom([c], "oye-" + T.title(e).toLowerCase().replace(/[^\wáéíóúñ]+/gi, "-").slice(0, 40)); }
+    catch (err) { box.innerHTML = `<p class="none dark">${esc(t("s_err"))}</p>`; return; }
+    shareUI(box, [c], files, `<p class="hint-dark">${esc(t("ev_story_hint"))}</p>`, "story");
   }
 
   /* ---------- FORMULARIO ---------- */
@@ -723,7 +835,7 @@
   function toast(msg) { const x = $("#toast"); x.textContent = msg; x.hidden = false; clearTimeout(tt); tt = setTimeout(() => { x.hidden = true; }, 2800); }
 
   /* ---------- navegación ---------- */
-  const VIEWS = ["hoy", "favoritos", "agenda", "enviar", "lugares", "oye", "story"];
+  const VIEWS = ["hoy", "favoritos", "agenda", "enviar", "lugares", "unirse", "oye", "story"];
   let current = "hoy";
   function route() {
     const h = (location.hash || "#hoy").slice(1);
@@ -734,7 +846,7 @@
   function showView(v, keep) {
     const changed = v !== current; current = v;
     $$(".view").forEach(s => { s.hidden = s.dataset.view !== v; });
-    const tab = v === "story" ? "agenda" : v === "enviar" ? "hoy" : v;
+    const tab = v === "story" ? "agenda" : v === "enviar" ? "hoy" : v === "unirse" ? "lugares" : v;
     $$(".tabbar a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
     if (v === "story") renderStory();
     if (changed && !keep) window.scrollTo(0, 0);
@@ -754,6 +866,7 @@
     const fv = x.closest("[data-fav]"); if (fv) return toggleFav(fv.dataset.fav, fv);
     const ic = x.closest("[data-ics]"); if (ic) return downloadIcs(ic.dataset.ics);
     const sh = x.closest("[data-share]"); if (sh) return shareEvent(sh.dataset.share);
+    const es = x.closest("[data-evstory]"); if (es) return shareEventStory(es.dataset.evstory);
     const ch = x.closest("[data-f]"); if (ch) { fState.f = ch.dataset.f; if (fState.f === "todo") fState.cat = ""; renderAgenda(); return; }
     const cc = x.closest("[data-cat]"); if (cc) { fState.cat = fState.cat === cc.dataset.cat ? "" : cc.dataset.cat; renderAgenda(); return; }
     const pt = x.closest("[data-ptype]"); if (pt) { placeType = pt.dataset.ptype; renderLugares(); return; }
@@ -771,7 +884,7 @@
   window.addEventListener("hashchange", route);
   window.addEventListener("popstate", route);
   $("#q").addEventListener("input", ev => { fState.q = ev.target.value; renderAgenda(); });
-  $$('input[name="smode"], input[name="slang"]').forEach(r => r.addEventListener("change", renderStory));
+  $$('input[name="smode"], input[name="slang"], input[name="sfmt"]').forEach(r => r.addEventListener("change", renderStory));
   $("#refreshBtn").addEventListener("click", async () => {
     const b = $("#refreshBtn"); b.classList.add("spin");
     await refresh(true); b.classList.remove("spin"); toast(t("updated"));
@@ -819,7 +932,7 @@
 
   /* ---------- arranque ---------- */
   (async function init() {
-    applyI18n(); renderOye(); setupForm(); setupPlayer();
+    applyI18n(); renderOye(); setupForm(); setupJoinForm(); setupPlayer();
     const cached = C.API_URL && store.get("cache", null);
     if (cached) {
       PODCAST = prepPodcast(cached.podcast || []); SHOWS = prepShows(cached.shows || []);

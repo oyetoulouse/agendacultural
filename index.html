@@ -145,8 +145,60 @@
     <section class="view" data-view="lugares" aria-labelledby="lugaresTitle" hidden>
       <h1 class="display" id="lugaresTitle" data-i18n="places">Lugares</h1>
       <p class="lede" data-i18n="places_lede">Bares, tiendas, cafés y asociaciones donde se encuentra la comunidad.</p>
+      <a class="cta-card join-cta" href="#unirse">
+        <span class="cta-big"><span class="cta-plus" aria-hidden="true">+</span><span data-i18n="join_cta">Súmate al directorio</span></span>
+        <span class="cta-small" data-i18n="join_cta_small">¿Tienes un lugar, colectivo o proyecto latino en Toulouse? Pide aparecer aquí.</span>
+      </a>
       <div class="chips" id="lugarFilters" role="group"></div>
       <div class="places" id="placeList"></div>
+    </section>
+
+    <!-- UNIRSE AL DIRECTORIO -->
+    <section class="view" data-view="unirse" aria-labelledby="joinTitle" hidden>
+      <a class="back" href="#lugares" data-i18n="back_dir">← Volver al directorio</a>
+      <h1 class="display" id="joinTitle" data-i18n="join_title">Súmate al directorio</h1>
+      <p class="lede" data-i18n="join_lede">Cuéntanos de tu lugar o proyecto. Lo revisamos y te avisamos cuando esté publicado.</p>
+      <form id="joinForm" class="form" novalidate>
+        <fieldset>
+          <legend data-i18n="join_fs1">Tu lugar o proyecto</legend>
+          <label class="f"><span data-i18n="j_nombre">Nombre *</span><input id="j_nombre" required maxlength="80"></label>
+          <label class="f"><span data-i18n="j_tipo">Tipo *</span>
+            <select id="j_tipo" required>
+              <option value="" data-i18n="choose">Elige una opción</option>
+              <option value="Bar" data-i18n="pt_bar">Bar</option>
+              <option value="Restaurante" data-i18n="pt_resto">Restaurante</option>
+              <option value="Café" data-i18n="pt_cafe">Café</option>
+              <option value="Tienda" data-i18n="pt_tienda">Tienda / épicerie</option>
+              <option value="Asociación" data-i18n="pt_asso">Asociación</option>
+              <option value="Colectivo" data-i18n="pt_colectivo">Colectivo</option>
+              <option value="Escuela" data-i18n="pt_escuela">Escuela / clases</option>
+              <option value="Sala" data-i18n="pt_sala">Sala / espacio cultural</option>
+              <option value="Otro" data-i18n="pt_otro">Otro</option>
+            </select></label>
+          <label class="f"><span data-i18n="j_desc">¿Qué hacen? (corto)</span><textarea id="j_desc" rows="3" maxlength="220"></textarea></label>
+          <label class="f check"><input type="checkbox" id="j_eventos"><span data-i18n="j_eventos">Organizamos o recibimos eventos de la comunidad con frecuencia</span></label>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="fs_where">Dónde</legend>
+          <label class="f"><span data-i18n="j_dir">Dirección (opcional)</span><input id="j_dir"></label>
+          <label class="f"><span data-i18n="j_barrio">Barrio</span><input id="j_barrio" data-i18n-ph="ph_barrio"></label>
+          <label class="f">Instagram<input id="j_ig" placeholder="@" autocapitalize="off"></label>
+          <label class="f"><span data-i18n="j_link">Web</span><input id="j_link" type="url" placeholder="https://"></label>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="j_fs3">Contacto</legend>
+          <label class="f"><span data-i18n="l_contacto">Tu email o WhatsApp *</span><input id="j_contacto" required data-i18n-ph="ph_contacto"><span class="hint" data-i18n="h_contacto">Solo para escribirte si falta algo.</span></label>
+          <label class="hp" aria-hidden="true">-<input id="j_web" tabindex="-1" autocomplete="off"></label>
+          <label class="f check"><input type="checkbox" id="j_ok" required><span data-i18n="j_ok">Acepto que Oye Toulouse publique esta información en la app.</span></label>
+        </fieldset>
+        <p class="form-err" id="joinErr" role="alert" hidden></p>
+        <button class="btn-big" id="joinBtn" type="submit" data-i18n="join_btn">Enviar solicitud</button>
+      </form>
+      <div class="sent" id="joinSent" hidden>
+        <p class="display sm" data-i18n="sent_title">¡Recibido!</p>
+        <p data-i18n="join_sent">Revisamos tu solicitud y te avisamos cuando aparezcas en el directorio.</p>
+        <button class="btn" type="button" id="joinAnother" data-i18n="join_another">Enviar otro lugar</button>
+      </div>
     </section>
 
     <!-- OYE: emisiones, redes, instalar -->
@@ -182,10 +234,15 @@
       <a class="back" href="#agenda" data-i18n="back">← Volver a la agenda</a>
       <h1 class="display" id="storyTitle" data-i18n="story_title">Story del finde</h1>
       <p class="lede" data-i18n="story_lede">La imagen se arma sola con lo que está en la agenda. Elige qué mostrar y compártela.</p>
-      <div class="seg seg-dark" role="radiogroup" id="storyMode">
+      <div class="seg seg-dark seg-2" role="radiogroup" id="storyFmt">
+        <label><input type="radio" name="sfmt" value="story" checked><span data-i18n="s_fmt_story">Story 9:16</span></label>
+        <label><input type="radio" name="sfmt" value="post"><span data-i18n="s_fmt_post">Publicación 4:5</span></label>
+      </div>
+      <div class="seg seg-dark seg-4" role="radiogroup" id="storyMode">
         <label><input type="radio" name="smode" value="finde" checked><span data-i18n="s_finde">Este finde</span></label>
         <label><input type="radio" name="smode" value="hoy"><span data-i18n="s_hoy">Hoy</span></label>
         <label><input type="radio" name="smode" value="semana"><span data-i18n="s_semana">7 días</span></label>
+        <label><input type="radio" name="smode" value="quincena"><span data-i18n="s_quincena">2 semanas</span></label>
       </div>
       <div class="seg seg-dark" role="radiogroup" id="storyLang">
         <label><input type="radio" name="slang" value="es"><span>Español</span></label>
@@ -199,7 +256,7 @@
 
   <nav class="tabbar" aria-label="Menu">
     <a href="#favoritos" data-tab="favoritos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span data-i18n="nav_favs">Favoritos</span></a>
-    <a href="#agenda" data-tab="agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n="nav_agenda">Agenda</span></a>
+    <a href="#agenda" data-tab="agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n="nav_agenda">Mi agenda</span></a>
     <a href="#hoy" data-tab="hoy" class="tab-home"><span class="home-btn"><img src="img/cupula.png" alt="" width="56" height="56"></span><span data-i18n="nav_home">Inicio</span></a>
     <a href="#lugares" data-tab="lugares"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg><span data-i18n="nav_lugares">Directorio</span></a>
     <a href="#oye" data-tab="oye"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><span>Oye</span></a>

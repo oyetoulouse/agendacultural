@@ -1,8 +1,8 @@
 /* OYE TOULOUSE — textos ES / FR */
 window.OYE_I18N = {
   es: {
-    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar", pause: "Pausa", updated: "Agenda actualizada", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", sub: "Media cultural latina", demo: "Ejemplos",
-    nav_hoy: "Inicio", nav_agenda: "Agenda", nav_lugares: "Directorio",
+    nav_favs: "Favoritos", nav_home: "Inicio", favs_title: "Favoritos", favs_lede: "Tu agenda personal: los eventos que marcaste con la estrella.", favs_empty: "Todavía no tienes favoritos. Abre cualquier evento y toca ☆ Favorito para guardarlo aquí.", favs_go: "Ver la agenda", follow: "Síguenos", listen_here: "Escuchar", pause: "Pausa", all_day: "Todo el día", all_day_s: "Todo el día", updated: "Agenda actualizada", listen_vodio: "Abrir en Vodio", hide_player: "Cerrar reproductor", vodio_sub: "Todas las emisiones", s_quincena: "2 semanas", s_fmt_story: "Story 9:16", s_fmt_post: "Publicación 4:5", caption_h: "Texto para la publicación", caption_copy: "Copiar texto", copied: "Texto copiado", copy_manual: "Selecciona el texto y cópialo", ev_story: "Story", ev_story_hint: "Compártela en tu story y etiqueta a @oyetoulouse.", s_err: "No se pudo crear la imagen. Inténtalo de nuevo.", with_events: "Con eventos", n_event: "1 evento próximo", n_events: "{n} eventos próximos", join_cta: "Súmate al directorio", join_cta_small: "¿Tienes un lugar, colectivo o proyecto latino en Toulouse? Pide aparecer aquí.", join_title: "Súmate al directorio", join_lede: "Cuéntanos de tu lugar o proyecto. Lo revisamos y te avisamos cuando esté publicado.", back_dir: "← Volver al directorio", join_fs1: "Tu lugar o proyecto", j_nombre: "Nombre *", j_tipo: "Tipo *", j_desc: "¿Qué hacen? (corto)", j_eventos: "Organizamos o recibimos eventos de la comunidad con frecuencia", j_dir: "Dirección (opcional)", j_barrio: "Barrio", ph_barrio: "Ej. Arnaud-Bernard", j_link: "Web", j_fs3: "Contacto", j_ok: "Acepto que Oye Toulouse publique esta información en la app.", join_btn: "Enviar solicitud", join_sent: "Revisamos tu solicitud y te avisamos cuando aparezcas en el directorio.", join_another: "Enviar otro lugar", pt_bar: "Bar", pt_resto: "Restaurante", pt_cafe: "Café", pt_tienda: "Tienda / épicerie", pt_asso: "Asociación", pt_colectivo: "Colectivo", pt_escuela: "Escuela / clases", pt_sala: "Sala / espacio cultural", pt_otro: "Otro", sub: "Media cultural latina", demo: "Ejemplos",
+    nav_hoy: "Inicio", nav_agenda: "Mi agenda", nav_lugares: "Directorio",
     later: "Más tarde hoy", tomorrow: "Mañana",
     cta_big: "Agrega tu evento", cta_small: "¿Organizas algo? Mándalo y lo sumamos a la agenda.",
     live: "En vivo ahora", nothing_live: "Nada en vivo", next: "Lo próximo:",
@@ -13,7 +13,7 @@ window.OYE_I18N = {
     search: "Buscar evento, lugar, colectivo…",
     f_todo: "Todo", f_finde: "Este finde", f_gratis: "Gratis", f_fav: "Me apunto",
     ev1: "evento", evn: "eventos", no_filter: "No hay eventos con esos filtros.",
-    story_btn: "Story",
+    story_btn: "Instagram",
     when: "Cuándo", where: "Dónde", org: "Organiza", price: "Precio", with: "Con",
     range: "Del {a} al {b}", each_day: "cada día",
     fav: "Favorito", fav_on: "En favoritos ✓", cal: "Calendario", share: "Compartir",
@@ -58,10 +58,10 @@ window.OYE_I18N = {
     install_android: "<b>Android:</b> en Chrome, menú ⋮ → «Instalar aplicación».",
     install_btn: "Instalar Oye Toulouse",
     /* story */
-    back: "← Volver a la agenda", story_title: "Story del finde",
-    story_lede: "La imagen se arma sola con lo que está en la agenda. Elige qué mostrar y compártela.",
+    back: "← Volver a la agenda", story_title: "Compartir en Instagram",
+    story_lede: "Las imágenes se arman solas con lo que está en la agenda. Elige formato, fechas e idioma.",
     s_finde: "Este finde", s_hoy: "Hoy", s_semana: "7 días", s_bi: "Bilingüe",
-    story_hint: "En el celu, «Compartir» te deja subirla directo a tu story de Instagram.",
+    story_hint: "En el celu, «Compartir» te deja subirlas directo a Instagram. La publicación sale como carrusel: portada + páginas.",
     s_share: "Compartir", s_download: "Descargar", s_empty: "No hay eventos para esas fechas.",
     s_saved: "Imagen descargada",
     /* categorías */
@@ -75,8 +75,8 @@ window.OYE_I18N = {
   },
 
   fr: {
-    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter", pause: "Pause", updated: "Agenda à jour", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", sub: "Média culturel latino", demo: "Exemples",
-    nav_hoy: "Accueil", nav_agenda: "Agenda", nav_lugares: "Annuaire",
+    nav_favs: "Favoris", nav_home: "Accueil", favs_title: "Favoris", favs_lede: "Votre agenda perso : les événements marqués d'une étoile.", favs_empty: "Pas encore de favoris. Ouvrez un événement et touchez ☆ Favori pour le garder ici.", favs_go: "Voir l'agenda", follow: "Suivez-nous", listen_here: "Écouter", pause: "Pause", all_day: "Toute la journée", all_day_s: "Journée", updated: "Agenda à jour", listen_vodio: "Ouvrir sur Vodio", hide_player: "Fermer le lecteur", vodio_sub: "Toutes les émissions", s_quincena: "2 semaines", s_fmt_story: "Story 9:16", s_fmt_post: "Publication 4:5", caption_h: "Texte pour la publication", caption_copy: "Copier le texte", copied: "Texte copié", copy_manual: "Sélectionnez le texte et copiez-le", ev_story: "Story", ev_story_hint: "Partagez-la en story et identifiez @oyetoulouse.", s_err: "Impossible de créer l'image. Réessayez.", with_events: "Avec événements", n_event: "1 événement à venir", n_events: "{n} événements à venir", join_cta: "Rejoignez l'annuaire", join_cta_small: "Vous avez un lieu, un collectif ou un projet latino à Toulouse ? Demandez à y figurer.", join_title: "Rejoindre l'annuaire", join_lede: "Parlez-nous de votre lieu ou projet. On le relit et on vous prévient dès qu'il est publié.", back_dir: "← Retour à l'annuaire", join_fs1: "Votre lieu ou projet", j_nombre: "Nom *", j_tipo: "Type *", j_desc: "Ce que vous faites (court)", j_eventos: "Nous organisons ou accueillons souvent des événements de la communauté", j_dir: "Adresse (facultatif)", j_barrio: "Quartier", ph_barrio: "Ex. Arnaud-Bernard", j_link: "Site web", j_fs3: "Contact", j_ok: "J'accepte qu'Oye Toulouse publie ces informations dans l'appli.", join_btn: "Envoyer la demande", join_sent: "On relit votre demande et on vous prévient dès que vous apparaissez dans l'annuaire.", join_another: "Proposer un autre lieu", pt_bar: "Bar", pt_resto: "Restaurant", pt_cafe: "Café", pt_tienda: "Épicerie / boutique", pt_asso: "Association", pt_colectivo: "Collectif", pt_escuela: "École / cours", pt_sala: "Salle / lieu culturel", pt_otro: "Autre", sub: "Média culturel latino", demo: "Exemples",
+    nav_hoy: "Accueil", nav_agenda: "Mon agenda", nav_lugares: "Annuaire",
     later: "Plus tard aujourd'hui", tomorrow: "Demain",
     cta_big: "Ajoutez votre événement", cta_small: "Vous organisez quelque chose ? Envoyez-le, on l'ajoute à l'agenda.",
     live: "En ce moment", nothing_live: "Rien en ce moment", next: "Prochainement :",
@@ -87,7 +87,7 @@ window.OYE_I18N = {
     search: "Chercher un événement, un lieu, un collectif…",
     f_todo: "Tout", f_finde: "Ce week-end", f_gratis: "Gratuit", f_fav: "J'y vais",
     ev1: "événement", evn: "événements", no_filter: "Aucun événement avec ces filtres.",
-    story_btn: "Story",
+    story_btn: "Instagram",
     when: "Quand", where: "Où", org: "Organisé par", price: "Prix", with: "Avec",
     range: "Du {a} au {b}", each_day: "tous les jours",
     fav: "Favori", fav_on: "En favori ✓", cal: "Calendrier", share: "Partager",
@@ -128,10 +128,10 @@ window.OYE_I18N = {
     install_ios: "<b>iPhone :</b> dans Safari, bouton Partager → « Sur l'écran d'accueil ».",
     install_android: "<b>Android :</b> dans Chrome, menu ⋮ → « Installer l'application ».",
     install_btn: "Installer Oye Toulouse",
-    back: "← Retour à l'agenda", story_title: "Story du week-end",
-    story_lede: "Le visuel se crée tout seul à partir de l'agenda. Choisissez la période et partagez-le.",
+    back: "← Retour à l'agenda", story_title: "Partager sur Instagram",
+    story_lede: "Les visuels se créent tout seuls à partir de l'agenda. Choisissez le format, les dates et la langue.",
     s_finde: "Ce week-end", s_hoy: "Aujourd'hui", s_semana: "7 jours", s_bi: "Bilingue",
-    story_hint: "Sur téléphone, « Partager » permet de le publier directement en story Instagram.",
+    story_hint: "Sur téléphone, « Partager » permet de les publier directement sur Instagram. La publication sort en carrousel : couverture + pages.",
     s_share: "Partager", s_download: "Télécharger", s_empty: "Aucun événement à ces dates.",
     s_saved: "Image téléchargée",
     cat: { "Música": "Musique", "Fiesta": "Soirée", "Baile": "Danse", "Cine": "Cinéma", "Arte": "Art & expo", "Charla": "Rencontre",
